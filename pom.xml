@@ -107,7 +107,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<imageName>task/spring-boot-docker:spring-plugin</imageName>
+<!--					<imageName>task/spring-boot-docker:spring-plugin</imageName>-->
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
