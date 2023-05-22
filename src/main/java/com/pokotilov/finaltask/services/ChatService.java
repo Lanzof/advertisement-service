@@ -36,9 +36,7 @@ public class ChatService {
                 .buyer(user)
                 .build();
         chatRepository.save(chat);
-        return DefaultResponse.builder()
-                .list(List.of(chat))
-                .build();
+        return new DefaultResponse(List.of(chat));
     }
 
     public DefaultResponse sendMessage(MessageDto messageDto) {
@@ -49,8 +47,6 @@ public class ChatService {
                 .text(messageDto.getText())
                 .build();
         messageRepository.save(message);//todo here must be a real chat
-        return DefaultResponse.builder()
-                .message("Successful send")
-                .build();
+        return new DefaultResponse("Successful send");
     }
 }

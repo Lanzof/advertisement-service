@@ -2,7 +2,7 @@ package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.UserDto;
 import com.pokotilov.finaltask.dto.VoteDto;
-import com.pokotilov.finaltask.services.UserServiceImpl;
+import com.pokotilov.finaltask.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import java.security.Principal;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
 //    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping

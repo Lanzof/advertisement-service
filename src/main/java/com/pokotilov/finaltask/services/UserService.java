@@ -8,6 +8,7 @@ import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.entities.Vote;
 import com.pokotilov.finaltask.entities.VoteID;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.mapper.UserMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import com.pokotilov.finaltask.repositories.VoteRepository;
@@ -24,7 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -36,25 +37,19 @@ public class UserServiceImpl {
 
     public DefaultResponse getAllUsers() {
         userRepository.findAll();
-        return DefaultResponse.builder()
-                .list(Collections.singletonList(userRepository.findAll().stream().map(UserDto::toDto).toList()))
-                .build();
+        return new DefaultResponse(
+                Collections.singletonList(userRepository.findAll().stream().map(UserMapper.INSTANCE::toDto).toList()));
     }
 
     public DefaultResponse getAllUsers(Pageable pageable) {
         userRepository.findAll(pageable);
-        return DefaultResponse.builder()
-                .list(Collections.singletonList(userRepository.findAll().stream().map(UserDto::toDto).toList()))
-                .build();
+        return new DefaultResponse(
+                Collections.singletonList(userRepository.findAll().stream().map(UserMapper.INSTANCE::toDto).toList()));
     }
 
     public DefaultResponse getUser(Long userId) {
-        //todo add permissions?
-        return DefaultResponse.builder()
-                .list(List.of(
-                        UserDto.toDto(userRepository.findById(userId)
-                                .orElseThrow(() -> new UserNotFoundException("User not found")))))
-                .build();
+        return new DefaultResponse(
+                List.of(UserMapper.INSTANCE.toDto(getUserFromRepository(userId))));
     }
 
     public DefaultResponse deleteUser(Long userId) {
@@ -62,14 +57,11 @@ public class UserServiceImpl {
             throw new UserNotFoundException("User not found");
         }
         userRepository.deleteById(userId);
-        return DefaultResponse.builder()
-                .message("User successfully deleted")
-                .build();
+        return new DefaultResponse("User successfully deleted");
     }
 
-    public DefaultResponse updateUser(Long id, UserDto userDto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public DefaultResponse updateUser(Long userId, UserDto userDto) {
+        User user = getUserFromRepository(userId);
         if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
         if (userDto.getPassword() != null) user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         if (userDto.getPhone() != null) user.setPhone(userDto.getPhone());
@@ -78,19 +70,14 @@ public class UserServiceImpl {
         if (userDto.getDescription() != null) user.setDescription(userDto.getDescription());
         userRepository.save(user);
 //        var jwtToken = jwtService.generateToken(user);
-        return DefaultResponse.builder()
-                .message("jwtToken of updated user")
-                .build();
+        return new DefaultResponse("jwtToken of updated user");
     }
 
     public DefaultResponse blockUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUserFromRepository(id);
         user.setBan(true);
         userRepository.save(user);
-        return DefaultResponse.builder()
-                .message("Successful block")
-                .build();
+        return new DefaultResponse("Successful block");
     }
 
     public DefaultResponse voteUser(VoteDto voteDto, Principal principal) {
@@ -112,8 +99,11 @@ public class UserServiceImpl {
                 .advert(advert)
                 .build();
         voteRepository.save(vote);
-        return DefaultResponse.builder()
-                .message("Successful vote")
-                .build();
+        return new DefaultResponse("Successful vote");
+    }
+
+    private User getUserFromRepository(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }

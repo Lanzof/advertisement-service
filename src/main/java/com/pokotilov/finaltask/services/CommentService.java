@@ -35,17 +35,13 @@ public class CommentService {
                 .text(commentDto.getText())
                 .build();
         commentRepository.save(comment);
-        return DefaultResponse.builder()
-                .message("Successful add")
-                .build();
+        return new DefaultResponse("Successful add");
     }
 
     public DefaultResponse banComment(Long commentid) {
         Comment comment = commentRepository.getReferenceById(commentid);
         comment.setBan(true);
         commentRepository.save(comment);
-        return DefaultResponse.builder()
-                .message("Successful block")
-                .build();
+        return new DefaultResponse("Successful block");
     }
 }

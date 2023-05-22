@@ -1,17 +1,24 @@
 package com.pokotilov.finaltask.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class DefaultResponse {
     private List<Object> list;
     private String message;
+
+    public DefaultResponse(List<Object> list) {
+        this.list = list;
+    }
+
+    public DefaultResponse(String message) {
+        this.message = message;
+    }
+
+    public DefaultResponse(List<Object> list, String message) {
+        this.list = list;
+        this.message = message;
+    }
 }

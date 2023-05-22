@@ -31,9 +31,7 @@ public class AdvertService {
                         .description(advert.getDescription())
                         .price(advert.getPrice())
                         .build()).toList();
-        return DefaultResponse.builder()
-                .list(Collections.singletonList(advertDtos))
-                .build();
+        return new DefaultResponse(Collections.singletonList(advertDtos));
     }
 
     public DefaultResponse getAdvert(Long advertId) {
@@ -43,16 +41,12 @@ public class AdvertService {
                 .description(advert.getDescription())
                 .price(advert.getPrice())
                 .build();
-        return DefaultResponse.builder()
-                .list(List.of(dto))
-                .build();
+        return new DefaultResponse(List.of(dto));
     }
 
     public DefaultResponse deleteAdvert(Long advertId) {
         advertRepository.deleteById(advertId);
-        return DefaultResponse.builder()
-                .message("Successful deleted")
-                .build();
+        return new DefaultResponse("Successful deleted");
     }
 
     public DefaultResponse createAdvert(AdvertDto advertDto, Principal principal) {
@@ -68,9 +62,7 @@ public class AdvertService {
                 .ban(false)
                 .build();
         advertRepository.save(advert);
-        return DefaultResponse.builder()
-                .message("Successful add")
-                .build();
+        return new DefaultResponse("Successful add");
     }
 
     public DefaultResponse updateAdvert(Long advertId, AdvertDto advertDto, Principal principal) {
@@ -84,25 +76,19 @@ public class AdvertService {
         advert.setDescription(advertDto.getDescription());
         advert.setPrice(advertDto.getPrice());
         advertRepository.save(advert);
-        return DefaultResponse.builder()
-                .message("Successful edited")
-                .build();
+        return new DefaultResponse("Successful edited");
     }
 
     public DefaultResponse banAdvert(Long id) {
         Advert advert = advertRepository.getReferenceById(id);
         advert.setBan(true);
         advertRepository.save(advert);
-        return DefaultResponse.builder()
-                .message("Successful block")
-                .build();
+        return new DefaultResponse("Successful block");
     }
 
     public DefaultResponse getAdvertComments(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
         List<Comment> comments = advert.getComments();
-        return DefaultResponse.builder()
-                .list(Collections.singletonList(comments))
-                .build();
+        return new DefaultResponse(Collections.singletonList(comments));
     }
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -22,14 +23,15 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
+
     @PostMapping("/login")
-    public ResponseEntity<?> logIn(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<?> logIn(@Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<?> signUp(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authenticationService.register(request).getMessage());
     }
 
     @PostMapping("/logout")
