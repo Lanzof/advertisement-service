@@ -1,8 +1,8 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.UserDto;
-import com.pokotilov.finaltask.dto.responses.UsersResponse;
 import com.pokotilov.finaltask.dto.VoteDto;
+import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.entities.Vote;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,40 +34,40 @@ public class UserServiceImpl {
 
 
 
-    public UsersResponse getAllUsers() {
+    public DefaultResponse getAllUsers() {
         userRepository.findAll();
-        return UsersResponse.builder()
-                .userDtos(userRepository.findAll().stream().map(UserDto::toDto).collect(Collectors.toList()))
+        return DefaultResponse.builder()
+                .list(Collections.singletonList(userRepository.findAll().stream().map(UserDto::toDto).toList()))
                 .build();
     }
 
-    public UsersResponse getAllUsers(Pageable pageable) {
+    public DefaultResponse getAllUsers(Pageable pageable) {
         userRepository.findAll(pageable);
-        return UsersResponse.builder()
-                .userDtos(userRepository.findAll().stream().map(UserDto::toDto).collect(Collectors.toList()))
+        return DefaultResponse.builder()
+                .list(Collections.singletonList(userRepository.findAll().stream().map(UserDto::toDto).toList()))
                 .build();
     }
 
-    public UsersResponse getUser(Long userId) {
+    public DefaultResponse getUser(Long userId) {
         //todo add permissions?
-        return UsersResponse.builder()
-                .userDtos(List.of(
+        return DefaultResponse.builder()
+                .list(List.of(
                         UserDto.toDto(userRepository.findById(userId)
                                 .orElseThrow(() -> new UserNotFoundException("User not found")))))
                 .build();
     }
 
-    public UsersResponse deleteUser(Long userId) {
+    public DefaultResponse deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException("User not found");
         }
         userRepository.deleteById(userId);
-        return UsersResponse.builder()
+        return DefaultResponse.builder()
                 .message("User successfully deleted")
                 .build();
     }
 
-    public UsersResponse updateUser(Long id, UserDto userDto) {
+    public DefaultResponse updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
@@ -78,22 +78,22 @@ public class UserServiceImpl {
         if (userDto.getDescription() != null) user.setDescription(userDto.getDescription());
         userRepository.save(user);
 //        var jwtToken = jwtService.generateToken(user);
-        return UsersResponse.builder()
+        return DefaultResponse.builder()
                 .message("jwtToken of updated user")
                 .build();
     }
 
-    public UsersResponse blockUser(Long id) {
+    public DefaultResponse blockUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         user.setBan(true);
         userRepository.save(user);
-        return UsersResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful block")
                 .build();
     }
 
-    public UsersResponse voteUser(VoteDto voteDto, Principal principal) {
+    public DefaultResponse voteUser(VoteDto voteDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(voteDto.getAdvert_id());
         User user = advert.getUser();
         User author = userRepository.findByEmail(principal.getName())
@@ -103,14 +103,16 @@ public class UserServiceImpl {
         }
         Vote vote = Vote.builder()
                 .voteID(VoteID.builder()
-                        .author(author)
-                        .advert(advert)
+                        .authorId(author.getId())
+                        .advertId(advert.getId())
                         .build())
                 .date(LocalDateTime.now())
                 .vote(voteDto.getVote())
+                .author(author)
+                .advert(advert)
                 .build();
         voteRepository.save(vote);
-        return UsersResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful vote")
                 .build();
     }

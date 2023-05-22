@@ -1,6 +1,5 @@
-package com.pokotilov.finaltask.dto.responses;
+package com.pokotilov.finaltask.dto;
 
-import com.pokotilov.finaltask.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UsersResponse {
-    private List<UserDto> userDtos;
+public class DefaultResponse {
+    private List<Object> list;
     private String message;
 }

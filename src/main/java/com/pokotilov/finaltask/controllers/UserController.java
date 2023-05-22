@@ -26,17 +26,17 @@ public class UserController {
 //    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers().getUserDtos());
+        return ResponseEntity.ok(userService.getAllUsers().getList());
     }
 
     @GetMapping("/paged")
     public ResponseEntity<?> getAllUsers(@ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(userService.getAllUsers(pageable).getUserDtos());
+        return ResponseEntity.ok(userService.getAllUsers(pageable).getList());
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<?> profile(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(userService.getUser(userId).getUserDtos());
+        return ResponseEntity.ok(userService.getUser(userId).getList());
     }
 
     @DeleteMapping("/{userId}")

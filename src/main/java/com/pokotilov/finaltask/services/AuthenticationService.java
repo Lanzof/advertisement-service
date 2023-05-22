@@ -1,8 +1,8 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.AuthenticationRequest;
-import com.pokotilov.finaltask.dto.responses.AuthenticationResponse;
-import com.pokotilov.finaltask.dto.responses.RegisterRequest;
+import com.pokotilov.finaltask.dto.RegisterRequest;
+import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
 import com.pokotilov.finaltask.repositories.UserRepository;
@@ -21,7 +21,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public DefaultResponse register(RegisterRequest request) {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -35,20 +35,20 @@ public class AuthenticationService {
                 .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
+        return DefaultResponse.builder()
+                .message(jwtToken)
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public DefaultResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User doesn't exist"));
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
+        return DefaultResponse.builder()
+                .message(jwtToken)
                 .build();
     }
 }

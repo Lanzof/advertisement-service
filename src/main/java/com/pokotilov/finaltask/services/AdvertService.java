@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.AdvertDto;
-import com.pokotilov.finaltask.dto.responses.AdvertResponse;
+import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Comment;
 import com.pokotilov.finaltask.entities.User;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,38 +24,38 @@ public class AdvertService {
     private final AdvertRepository advertRepository;
     private final UserRepository userRepository;
 
-    public AdvertResponse getAllAdverts() {
+    public DefaultResponse getAllAdverts() {
         List<AdvertDto> advertDtos = advertRepository.findAll().stream()
                 .map(advert -> AdvertDto.builder()
                         .title(advert.getTitle())
                         .description(advert.getDescription())
                         .price(advert.getPrice())
                         .build()).toList();
-        return AdvertResponse.builder()
-                .advertDtos(advertDtos)
+        return DefaultResponse.builder()
+                .list(Collections.singletonList(advertDtos))
                 .build();
     }
 
-    public AdvertResponse getAdvert(Long advertId) {
+    public DefaultResponse getAdvert(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
         AdvertDto dto = AdvertDto.builder()
                 .title(advert.getTitle())
                 .description(advert.getDescription())
                 .price(advert.getPrice())
                 .build();
-        return AdvertResponse.builder()
-                .advertDtos(List.of(dto))
+        return DefaultResponse.builder()
+                .list(List.of(dto))
                 .build();
     }
 
-    public AdvertResponse deleteAdvert(Long advertId) {
+    public DefaultResponse deleteAdvert(Long advertId) {
         advertRepository.deleteById(advertId);
-        return AdvertResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful deleted")
                 .build();
     }
 
-    public AdvertResponse createAdvert(AdvertDto advertDto, Principal principal) {
+    public DefaultResponse createAdvert(AdvertDto advertDto, Principal principal) {
         User user =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         Advert advert = Advert.builder()
@@ -68,12 +68,12 @@ public class AdvertService {
                 .ban(false)
                 .build();
         advertRepository.save(advert);
-        return AdvertResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful add")
                 .build();
     }
 
-    public AdvertResponse updateAdvert(Long advertId, AdvertDto advertDto, Principal principal) {
+    public DefaultResponse updateAdvert(Long advertId, AdvertDto advertDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(advertId);
         User user =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -84,25 +84,25 @@ public class AdvertService {
         advert.setDescription(advertDto.getDescription());
         advert.setPrice(advertDto.getPrice());
         advertRepository.save(advert);
-        return AdvertResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful edited")
                 .build();
     }
 
-    public AdvertResponse banAdvert(Long id) {
+    public DefaultResponse banAdvert(Long id) {
         Advert advert = advertRepository.getReferenceById(id);
         advert.setBan(true);
         advertRepository.save(advert);
-        return AdvertResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful block")
                 .build();
     }
 
-    public AdvertResponse getAdvertComments(Long advertId) {
+    public DefaultResponse getAdvertComments(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
-        Set<Comment> comments = advert.getComments();
-        return AdvertResponse.builder()
-                .comment(comments)
+        List<Comment> comments = advert.getComments();
+        return DefaultResponse.builder()
+                .list(Collections.singletonList(comments))
                 .build();
     }
 }

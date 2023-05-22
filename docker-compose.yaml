@@ -8,13 +8,8 @@ services:
     container_name: adverts
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/Final-task
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Cka4at
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    links:
-      - postgres:database
   postgres:
-    image: postgres:15.2
+    image: postgres:15.2-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -22,8 +17,9 @@ services:
       POSTGRES_DB: Final-task
     volumes:
       - db-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - ./db:/docker-entrypoint-initdb.d
+#    ports:
+#      - "5432:5432"
 volumes:
   db-data:
     driver: local

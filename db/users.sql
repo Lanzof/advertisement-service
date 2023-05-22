@@ -1,0 +1,2 @@
+INSERT INTO public.users (id, ban, description, email, first_name, last_name, password, phone, rating, role) VALUES (1, false, 'hi! it''s me, dio!', '378756462@mail.ru', 'Mario', 'Dio', '$2a$10$rpSz2koHinaUvVP2RxkYo.0RGOxHpZGuN1SqXyeeHJxAoiCW35sSi', '+79518892992', 0, 'USER');
+INSERT INTO public.users (id, ban, description, email, first_name, last_name, password, phone, rating, role) VALUES (2, false, 'string', 'sanya@gmail.com', 'Admin', 'Admin', '$2a$10$GBPdu7mxe4G0knhrFfeNJ.eqxWQxlNtG8QFPOTjkTJR/Ou.VaUI3G', '+16022200711438715057886', 0, 'ADMIN');

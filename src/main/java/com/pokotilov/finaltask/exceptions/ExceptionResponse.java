@@ -1,15 +1,20 @@
 package com.pokotilov.finaltask.exceptions;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
+@Getter
 public class ExceptionResponse {
-    private ZonedDateTime timeStamp;
+    private final HttpStatus status;
     private String message;
-    private String detail;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime time = LocalDateTime.now();
 
+    public ExceptionResponse(HttpStatus status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 }

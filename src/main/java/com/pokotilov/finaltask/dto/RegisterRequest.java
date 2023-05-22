@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.dto.responses;
+package com.pokotilov.finaltask.dto;
 
 import com.pokotilov.finaltask.entities.Role;
 import jakarta.validation.constraints.NotBlank;

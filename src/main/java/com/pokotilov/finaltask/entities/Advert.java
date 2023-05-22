@@ -10,7 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -39,9 +41,9 @@ public class Advert {
     private Boolean ban;
     @OneToMany(mappedBy = "advert")
     @OrderBy("date ASC")
-    private Set<Comment> comments = new HashSet<>();
-//    @OneToMany(mappedBy = "advert")
-//    private Set<Vote> votes = new HashSet<>();
+    private List<Comment> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "advert")
+    private List<Vote> votes = new ArrayList<>();
     @OneToMany(mappedBy = "advert")
     private Set<Chat> chats = new HashSet<>();
 }

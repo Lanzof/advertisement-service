@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.AuthenticationRequest;
-import com.pokotilov.finaltask.dto.responses.RegisterRequest;
+import com.pokotilov.finaltask.dto.RegisterRequest;
 import com.pokotilov.finaltask.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.MessageDto;
-import com.pokotilov.finaltask.dto.responses.ChatResponse;
+import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Chat;
 import com.pokotilov.finaltask.entities.Message;
@@ -27,7 +27,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
 
-    public ChatResponse createChat(Long advertId, Principal principal) {
+    public DefaultResponse createChat(Long advertId, Principal principal) {
         Advert advert = advertRepository.getReferenceById(advertId);
         User user =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -36,12 +36,12 @@ public class ChatService {
                 .buyer(user)
                 .build();
         chatRepository.save(chat);
-        return ChatResponse.builder()
-                .chats(List.of(chat))
+        return DefaultResponse.builder()
+                .list(List.of(chat))
                 .build();
     }
 
-    public ChatResponse sendMessage(MessageDto messageDto) {
+    public DefaultResponse sendMessage(MessageDto messageDto) {
         Chat chat = chatRepository.getReferenceById(messageDto.getChatId());
         Message message = Message.builder()
                 .chat(chat)
@@ -49,7 +49,7 @@ public class ChatService {
                 .text(messageDto.getText())
                 .build();
         messageRepository.save(message);//todo here must be a real chat
-        return ChatResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful send")
                 .build();
     }

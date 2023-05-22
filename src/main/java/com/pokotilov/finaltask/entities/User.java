@@ -41,8 +41,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "author")
     @OrderBy("date ASC")
     private List<Comment> comments = new ArrayList<>();
-//    @OneToMany(mappedBy = "author")
-//    private Set<Vote> votes = new HashSet<>();
+    @OneToMany(mappedBy = "author")
+    private Set<Vote> votes = new HashSet<>();
     @OneToMany(mappedBy = "buyer")
     private Set<Chat> chats = new HashSet<>();
 

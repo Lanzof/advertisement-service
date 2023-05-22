@@ -44,7 +44,7 @@ public class AdvertController {
     @GetMapping
     @Operation()
     public ResponseEntity<?> getAllAdverts() {
-        return ResponseEntity.ok(advertService.getAllAdverts().getAdverts());
+        return ResponseEntity.ok(advertService.getAllAdverts().getList());
     }
 
     @PostMapping
@@ -60,7 +60,7 @@ public class AdvertController {
 
     @GetMapping("/{advertId}")
     public ResponseEntity<?> getSingleAdvert(@PathVariable("advertId") Long advertId) {
-        return ResponseEntity.ok(advertService.getAdvert(advertId).getAdvertDtos());
+        return ResponseEntity.ok(advertService.getAdvert(advertId).getList());
     }
 
     @DeleteMapping("/{advertId}")
@@ -78,7 +78,7 @@ public class AdvertController {
     @PutMapping("/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> updateAdvert(@RequestBody Long id) {
+    public ResponseEntity<?> banAdvert(@RequestBody Long id) {
         return ResponseEntity.ok(advertService.banAdvert(id).getMessage());
     }
 }

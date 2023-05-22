@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.CommentDto;
-import com.pokotilov.finaltask.dto.responses.CommentResponse;
+import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Comment;
 import com.pokotilov.finaltask.entities.User;
@@ -24,7 +24,7 @@ public class CommentService {
     private final UserRepository userRepository;
 
 
-    public CommentResponse createComment(CommentDto commentDto, Principal principal) {
+    public DefaultResponse createComment(CommentDto commentDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(commentDto.getAdvertId());
         User user =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -35,16 +35,16 @@ public class CommentService {
                 .text(commentDto.getText())
                 .build();
         commentRepository.save(comment);
-        return CommentResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful add")
                 .build();
     }
 
-    public CommentResponse banComment(Long commentid) {
+    public DefaultResponse banComment(Long commentid) {
         Comment comment = commentRepository.getReferenceById(commentid);
         comment.setBan(true);
         commentRepository.save(comment);
-        return CommentResponse.builder()
+        return DefaultResponse.builder()
                 .message("Successful block")
                 .build();
     }
