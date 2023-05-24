@@ -60,7 +60,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>${org.projectlombok.version}</version>
-<!--			<optional>true</optional>-->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -107,7 +106,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-<!--					<imageName>task/spring-boot-docker:spring-plugin</imageName>-->
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

@@ -20,14 +20,14 @@ public class Chat {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "advert_id")
   private Advert advert;
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "buyer_id")
   private User buyer;
 
-  @OneToMany(mappedBy = "chat")
+  @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL,orphanRemoval = true)
   @OrderBy("date ASC")
   private List<Message> messageList = new ArrayList<>();
 

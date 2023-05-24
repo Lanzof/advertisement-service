@@ -5,6 +5,7 @@ import com.pokotilov.finaltask.services.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +24,7 @@ public class CommentController {
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> createComment(@RequestBody CommentDto comment, Principal principal) {
+    public ResponseEntity<?> createComment(@Valid @RequestBody CommentDto comment, Principal principal) {
         return ResponseEntity.ok(commentService.createComment(comment, principal).getMessage());
     }
 

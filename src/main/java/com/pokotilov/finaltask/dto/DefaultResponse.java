@@ -1,12 +1,15 @@
 package com.pokotilov.finaltask.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class DefaultResponse {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Object> list;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
 
     public DefaultResponse(List<Object> list) {

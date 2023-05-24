@@ -2,9 +2,7 @@ package com.pokotilov.finaltask.dto;
 
 import com.pokotilov.finaltask.entities.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class RegisterRequest {
     @Schema(example = "someEmail@gmail.com")
     @NotBlank(message = "email is blank")
-    @Pattern(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",
+    @Email(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",
             message = "wrong email")
     private String email;
     @Schema(example = "YourPassword23[]")
@@ -41,5 +39,6 @@ public class RegisterRequest {
     private String lastName;
     private String description;
     @Schema(example = "USER or ADMIN")
+    @NotNull
     private Role role;
 }

@@ -1,6 +1,6 @@
 package com.pokotilov.finaltask.advice;
 
-import com.pokotilov.finaltask.exceptions.ExceptionResponse;
+import com.pokotilov.finaltask.dto.ExceptionResponse;
 import com.pokotilov.finaltask.exceptions.UserAlreadyExist;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;

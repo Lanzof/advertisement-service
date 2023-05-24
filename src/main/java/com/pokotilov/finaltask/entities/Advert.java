@@ -26,7 +26,7 @@ public class Advert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty
+    @NotNull
     private String title;
     @NotEmpty
     private String description;
@@ -35,15 +35,15 @@ public class Advert {
     @Positive
     private Integer price;
     private Boolean premium;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
     private Boolean ban;
-    @OneToMany(mappedBy = "advert")
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
     @OrderBy("date ASC")
     private List<Comment> comments = new ArrayList<>();
-    @OneToMany(mappedBy = "advert")
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Vote> votes = new ArrayList<>();
-    @OneToMany(mappedBy = "advert")
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Chat> chats = new HashSet<>();
 }

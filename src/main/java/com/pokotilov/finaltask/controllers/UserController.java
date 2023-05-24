@@ -5,6 +5,7 @@ import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -45,8 +46,8 @@ public class UserController {
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable("userId") Long id, @RequestBody UserDto user) {
-        return ResponseEntity.ok(userService.updateUser(id, user).getMessage());
+    public ResponseEntity<?> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UserDto user, Principal principal) {
+        return ResponseEntity.ok(userService.updateUser(id, user, principal).getMessage());
     }//TODO reauthorize after changing password
     //todo make standalone update dto
 
@@ -57,7 +58,7 @@ public class UserController {
     }
 
     @PostMapping("/vote")
-    public ResponseEntity<?> voteUser(@RequestBody VoteDto voteDto, Principal principal) {
+    public ResponseEntity<?> voteUser(@Valid @RequestBody VoteDto voteDto, Principal principal) {
         return ResponseEntity.ok(userService.voteUser(voteDto, principal).getMessage());
     }
 }

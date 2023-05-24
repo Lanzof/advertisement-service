@@ -5,6 +5,7 @@ import com.pokotilov.finaltask.services.AdvertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +50,7 @@ public class AdvertController {
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> createAdvert(@RequestBody AdvertDto advert, Principal principal) {
+    public ResponseEntity<?> createAdvert(@Valid @RequestBody AdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.createAdvert(advert, principal).getMessage());
     }
 
@@ -71,7 +72,7 @@ public class AdvertController {
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> updateAdvert(@PathVariable("advertId") Long advertId, @RequestBody AdvertDto advert, Principal principal) {
+    public ResponseEntity<?> updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody AdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.updateAdvert(advertId, advert, principal).getMessage());
     }
 

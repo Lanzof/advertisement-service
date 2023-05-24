@@ -4,6 +4,7 @@ import com.pokotilov.finaltask.dto.MessageDto;
 import com.pokotilov.finaltask.services.ChatService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class ChatController {
     }
 
     @PostMapping("/message")
-    public ResponseEntity<?> sendMessage(@RequestBody MessageDto messageDto) {
+    public ResponseEntity<?> sendMessage(@Valid @RequestBody MessageDto messageDto) {
         return ResponseEntity.ok(chatService.sendMessage(messageDto).getMessage());
     }
 }

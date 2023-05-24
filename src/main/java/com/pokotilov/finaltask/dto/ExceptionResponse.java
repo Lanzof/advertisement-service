@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.exceptions;
+package com.pokotilov.finaltask.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;

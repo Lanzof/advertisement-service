@@ -2,6 +2,7 @@ package com.pokotilov.finaltask.dto;
 
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {
-  @NotBlank
+  @Positive
   private long advertId;
   private long authorId;
   private LocalDateTime date;

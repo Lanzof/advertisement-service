@@ -1,6 +1,7 @@
 spring:
   liquibase:
     enabled: false
+    change-log: classpath:db/db.changelog-master.yaml
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,7 +22,7 @@ spring:
 jwt:
   header: Authorization
   secret: 2F413F442A472D4B6150645367566B59703373367639792442264529482B4D62
-  expiration: 604800
+  expiration: 15
 
 server:
   error:

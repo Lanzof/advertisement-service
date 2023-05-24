@@ -22,11 +22,11 @@ public class Vote {
   private LocalDateTime date;
   private long vote;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("advertId")
   private Advert advert;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("authorId")
   private User author;
 }

@@ -14,6 +14,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Service
@@ -23,7 +24,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
     @Value("${jwt.expiration}")
-    private long validityInMilliseconds;
+    private long validityInMinutes;
 
     public boolean isTokenValid(String token, UserDetails user) {
         final String email = extractUsername(token);
@@ -47,7 +48,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 + validityInMilliseconds))
+                .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(validityInMinutes) ))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

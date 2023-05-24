@@ -31,7 +31,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request).getMessage());
+        return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/logout")

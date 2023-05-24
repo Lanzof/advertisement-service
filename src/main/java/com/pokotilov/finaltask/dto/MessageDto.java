@@ -1,5 +1,6 @@
 package com.pokotilov.finaltask.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MessageDto {
     private Long chatId;
+    @NotBlank
     private String text;
     private LocalDateTime date;
 }
