@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.AuthenticationRequest;
-import com.pokotilov.finaltask.dto.RegisterRequest;
+import com.pokotilov.finaltask.dto.user.AuthUserRequest;
+import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
 import com.pokotilov.finaltask.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,12 +25,12 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> logIn(@Valid @RequestBody AuthenticationRequest request) {
+    public ResponseEntity<?> logIn(@Valid @RequestBody AuthUserRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody RegisterUserRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 

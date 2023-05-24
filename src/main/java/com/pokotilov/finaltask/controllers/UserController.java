@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.UserDto;
 import com.pokotilov.finaltask.dto.VoteDto;
+import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,37 +24,35 @@ public class UserController {
 
     private final UserService userService;
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping
-    public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers().getList());
-    }
+//    @GetMapping("/paged")
+//    public ResponseEntity<?> getAllUsers() {
+//        return ResponseEntity.ok(userService.getAllUsers().getList());
+//    }
 
-    @GetMapping("/paged")
+    @GetMapping
     public ResponseEntity<?> getAllUsers(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(userService.getAllUsers(pageable).getList());
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> profile(@PathVariable("userId") Long userId) {
+    public ResponseEntity<?> getUser(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(userService.getUser(userId).getList());
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(userService.deleteUser(userId).getMessage());
+    public ResponseEntity<?> deleteUser(@PathVariable("userId") Long userId, Principal principal) {
+        return ResponseEntity.ok(userService.deleteUser(userId, principal).getMessage());
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UserDto user, Principal principal) {
+    public ResponseEntity<?> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
         return ResponseEntity.ok(userService.updateUser(id, user, principal).getMessage());
-    }//TODO reauthorize after changing password
-    //todo make standalone update dto
+    }
 
     @PutMapping("/block")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> blockUser(@RequestBody Long id) {
-        return ResponseEntity.ok(userService.blockUser(id).getMessage());
+    public ResponseEntity<?> banUser(@RequestBody Long id) {
+        return ResponseEntity.ok(userService.banUser(id).getMessage());
     }
 
     @PostMapping("/vote")

@@ -1,6 +1,7 @@
 package com.pokotilov.finaltask.mapper;
 
-import com.pokotilov.finaltask.dto.UserDto;
+import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
+import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,6 +18,5 @@ public interface UserMapper {
     @Mapping(target = "firstName", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "lastName", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "rating", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateUser(UserDto userDto, @MappingTarget User user);
+    void updateUser(UpdateUserRequest userDto, @MappingTarget User user);
 }

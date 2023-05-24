@@ -1,6 +1,6 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.AdvertDto;
+import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.services.AdvertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -43,14 +43,14 @@ public class AdvertController {
 
 //public @ResponseBody void sort(@Parameter(hidden = true) Sort sort) {
     @GetMapping
-    @Operation()
+//    @Operation()   todo make it pageable and sorted
     public ResponseEntity<?> getAllAdverts() {
         return ResponseEntity.ok(advertService.getAllAdverts().getList());
     }
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> createAdvert(@Valid @RequestBody AdvertDto advert, Principal principal) {
+    public ResponseEntity<?> createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.createAdvert(advert, principal).getMessage());
     }
 
@@ -60,19 +60,19 @@ public class AdvertController {
     }
 
     @GetMapping("/{advertId}")
-    public ResponseEntity<?> getSingleAdvert(@PathVariable("advertId") Long advertId) {
+    public ResponseEntity<?> getAdvert(@PathVariable("advertId") Long advertId) {
         return ResponseEntity.ok(advertService.getAdvert(advertId).getList());
     }
 
     @DeleteMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> deleteAdvert(@PathVariable("advertId") Long advertId) {
-        return ResponseEntity.ok(advertService.deleteAdvert(advertId).getMessage());
+    public ResponseEntity<?> deleteAdvert(@PathVariable("advertId") Long advertId, Principal principal) {
+        return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal).getMessage());
     }
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody AdvertDto advert, Principal principal) {
+    public ResponseEntity<?> updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody InputAdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.updateAdvert(advertId, advert, principal).getMessage());
     }
 

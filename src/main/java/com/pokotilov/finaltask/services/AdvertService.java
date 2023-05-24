@@ -1,11 +1,14 @@
 package com.pokotilov.finaltask.services;
 
-import com.pokotilov.finaltask.dto.AdvertDto;
 import com.pokotilov.finaltask.dto.DefaultResponse;
+import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Comment;
+import com.pokotilov.finaltask.entities.Role;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.mapper.AdvertMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,40 +26,27 @@ public class AdvertService {
 
     private final AdvertRepository advertRepository;
     private final UserRepository userRepository;
+    private final AdvertMapper advertMapper;
 
     public DefaultResponse getAllAdverts() {
-        List<AdvertDto> advertDtos = advertRepository.findAll().stream()
-                .map(advert -> AdvertDto.builder()
-                        .title(advert.getTitle())
-                        .description(advert.getDescription())
-                        .price(advert.getPrice())
-                        .build()).toList();
-        return new DefaultResponse(Collections.singletonList(advertDtos));
+        List<OutputAdvertDto> outputAdvertDtos = advertRepository.findAll().stream()
+                .map(advertMapper::toDto).toList();
+        return new DefaultResponse(Collections.singletonList(outputAdvertDtos));
     }
 
     public DefaultResponse getAdvert(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
-        AdvertDto dto = AdvertDto.builder()
-                .title(advert.getTitle())
-                .description(advert.getDescription())
-                .price(advert.getPrice())
-                .build();
+        OutputAdvertDto dto = advertMapper.toDto(advert);
         return new DefaultResponse(List.of(dto));
     }
 
-    public DefaultResponse deleteAdvert(Long advertId) {
-        advertRepository.deleteById(advertId);
-        return new DefaultResponse("Successful deleted");
-    }
-
-    public DefaultResponse createAdvert(AdvertDto advertDto, Principal principal) {
-        User user =  userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public DefaultResponse createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
+        User user = getUserByPrincipal(principal);
         Advert advert = Advert.builder()
-                .title(advertDto.getTitle())
-                .description(advertDto.getDescription())
+                .title(inputAdvertDto.getTitle())
+                .description(inputAdvertDto.getDescription())
                 .date(LocalDateTime.now())
-                .price(advertDto.getPrice())
+                .price(inputAdvertDto.getPrice())
                 .premium(false)
                 .user(user)
                 .ban(false)
@@ -65,18 +55,25 @@ public class AdvertService {
         return new DefaultResponse("Successful add");
     }
 
-    public DefaultResponse updateAdvert(Long advertId, AdvertDto advertDto, Principal principal) {
+    public DefaultResponse updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(advertId);
-        User user =  userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        if (!advert.getUser().equals(user)) {
-            throw new AccessDeniedException("unauthorized");//todo remade with 401
+        User user = getUserByPrincipal(principal);
+        if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
+            throw new AccessDeniedException("Unauthorized");
         }
-        advert.setTitle(advertDto.getTitle());
-        advert.setDescription(advertDto.getDescription());
-        advert.setPrice(advertDto.getPrice());
+        advertMapper.updateAdvert(inputAdvertDto, advert);
         advertRepository.save(advert);
         return new DefaultResponse("Successful edited");
+    }
+
+    public DefaultResponse deleteAdvert(Long advertId, Principal principal) {
+        Advert advert = advertRepository.getReferenceById(advertId);
+        User user = getUserByPrincipal(principal);
+        if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
+            throw new AccessDeniedException("Unauthorized");
+        }
+        advertRepository.deleteById(advertId);
+        return new DefaultResponse("Successful deleted");
     }
 
     public DefaultResponse banAdvert(Long id) {
@@ -90,5 +87,10 @@ public class AdvertService {
         Advert advert = advertRepository.getReferenceById(advertId);
         List<Comment> comments = advert.getComments();
         return new DefaultResponse(Collections.singletonList(comments));
+    }
+
+    private User getUserByPrincipal(Principal principal) {
+        return userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }

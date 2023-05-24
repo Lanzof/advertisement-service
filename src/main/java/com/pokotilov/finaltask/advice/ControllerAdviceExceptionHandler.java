@@ -1,7 +1,8 @@
 package com.pokotilov.finaltask.advice;
 
 import com.pokotilov.finaltask.dto.ExceptionResponse;
-import com.pokotilov.finaltask.exceptions.UserAlreadyExist;
+import com.pokotilov.finaltask.exceptions.SelfVoteException;
+import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,8 +37,15 @@ public class ControllerAdviceExceptionHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public final ExceptionResponse handleSelfVoteExceptions(SelfVoteException ex) {
+//        log.error(ex.getMessage(), ex);
+        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public final ExceptionResponse handleUserAlreadyExistExceptions(UserAlreadyExist ex) {
+    public final ExceptionResponse handleUserAlreadyExistExceptions(UserAlreadyExistException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }

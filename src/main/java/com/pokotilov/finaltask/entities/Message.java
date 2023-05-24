@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -23,5 +24,6 @@ public class Message {
   @JoinColumn(name = "chat_id")
   private Chat chat;
   private String text;
+  @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
   private LocalDateTime date;
 }

@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.dto;
+package com.pokotilov.finaltask.dto.advert;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdvertDto {
+public class InputAdvertDto {
     @NotBlank
     private String title;
     @NotBlank
     private String description;
-    @NotNull(message = "price cannot be empty")
-    @Positive
+    @NotNull(message = "Price can't be null.")
+    @Positive(message = "Price should be positive.")
     private Integer price;
 }

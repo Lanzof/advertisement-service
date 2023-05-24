@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.dto;
+package com.pokotilov.finaltask.dto.user;
 
 import com.pokotilov.finaltask.entities.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterRequest {
+public class RegisterUserRequest {
     @Schema(example = "someEmail@gmail.com")
     @NotBlank(message = "email is blank")
     @Email(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",

@@ -22,14 +22,13 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true)
+//    @Column(unique = true)
     private String email;
     private String password;
     private String phone;
     private String firstName;
     private String lastName;
     private String description;
-//    @Formula("(SELECT AVG(r.votes) FROM votes AS r WHERE r.recipient_id = id)")
     private Float rating;
     private Boolean ban;
 
@@ -51,7 +50,6 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
-//        return roles.stream().map(role -> new SimpleGrantedAuthority(role.getRole())).collect(Collectors.toList());
     }
 
     @Override
