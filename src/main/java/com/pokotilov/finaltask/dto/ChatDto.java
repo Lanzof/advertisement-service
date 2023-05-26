@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatDto {
+    private Long id;
     private Long advertId;
     private Long buyerId;
 }

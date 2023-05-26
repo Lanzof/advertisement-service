@@ -1,8 +1,8 @@
 package com.pokotilov.finaltask.services;
 
-import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
+import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.SelfVoteException;
 import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
@@ -13,6 +13,7 @@ import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import com.pokotilov.finaltask.repositories.VoteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,34 +35,25 @@ public class UserService {
 
     private static final String USER_NOT_FOUND = "User not found";
 
-
-
-    public DefaultResponse getAllUsers() { //todo to delete?
-        return new DefaultResponse(
-                Collections.singletonList(userRepository.findAll().stream().map(userMapper::toDto).toList()));
+    public Page<UserDto> getAllUsers(Pageable pageable) { //todo add default sort
+        return userRepository.findAll(pageable).map(userMapper::toDto);
     }
 
-    public DefaultResponse getAllUsers(Pageable pageable) { //todo add default sort
-        return new DefaultResponse(
-                Collections.singletonList(userRepository.findAll(pageable).stream().map(userMapper::toDto).toList()));
+    public UserDto getUser(Long userId) {
+        return userMapper.toDto(getUserById(userId));
     }
 
-    public DefaultResponse getUser(Long userId) {
-        return new DefaultResponse(
-                List.of(userMapper.toDto(getUserById(userId))));
-    }
-
-    public DefaultResponse deleteUser(Long userId, Principal principal) {
+    public String deleteUser(Long userId, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
         if ((requester.getRole() != Role.ADMIN) && (!user.getId().equals(requester.getId()))) {
             throw new AccessDeniedException("Unauthorized");
         }
         userRepository.deleteById(userId);
-        return new DefaultResponse("User successfully deleted");
+        return "User successfully deleted";
     }
 
-    public DefaultResponse updateUser(Long userId, UpdateUserRequest updateUserRequest, Principal principal) {
+    public String updateUser(Long userId, UpdateUserRequest updateUserRequest, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
         if ((requester.getRole() != Role.ADMIN) && (!user.getId().equals(requester.getId()))) {
@@ -75,17 +65,17 @@ public class UserService {
         userMapper.updateUser(updateUserRequest, user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
-        return new DefaultResponse("Successful editing");
+        return "Successful editing";
     }
 
-    public DefaultResponse banUser(Long id) {
+    public String banUser(Long id) {
         User user = getUserById(id);
         user.setBan(true);
         userRepository.save(user);
-        return new DefaultResponse("Successful block");
+        return "Successful block";
     }
 
-    public DefaultResponse voteUser(VoteDto voteDto, Principal principal) {
+    public String voteUser(VoteDto voteDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(voteDto.getAdvertId());
         User user = advert.getUser();
         User author = getUserByPrincipal(principal);
@@ -103,7 +93,7 @@ public class UserService {
                 .advert(advert)
                 .build();
         voteRepository.save(vote);
-        return new DefaultResponse("Successful vote");
+        return "Successful vote";
     }
 
     private User getUserById(Long userId){

@@ -1,7 +1,9 @@
-package com.pokotilov.finaltask.dto;
+package com.pokotilov.finaltask.dto.comments;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -9,17 +11,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentDto {
+public class InputCommentDto {
   @Positive
-  private long advertId;
-  private long authorId;
-  private LocalDateTime date;
+  @NotNull
+  @JsonProperty("advert ID")
+  private Long advertId;
   @NotBlank
   @Size(min = 4, max = 10000, message = "Data validation error")
   private String text;

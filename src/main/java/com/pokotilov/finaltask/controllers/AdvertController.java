@@ -1,17 +1,22 @@
 package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
+import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.services.AdvertService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/advert")
@@ -39,47 +44,51 @@ public class AdvertController {
 //        name = "sort",
 //        required = false,
 //        array = @ArraySchema(schema = @Schema(type = "string")))
-//@GetMapping("/sort")
 
 //public @ResponseBody void sort(@Parameter(hidden = true) Sort sort) {
     @GetMapping
-//    @Operation()   todo make it pageable and sorted
-    public ResponseEntity<?> getAllAdverts() {
-        return ResponseEntity.ok(advertService.getAllAdverts().getList());
+    public Page<OutputAdvertDto> getAllAdverts(
+            @Parameter(description = "№ страницы.", required = true) @RequestParam int pageNo,
+            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
+            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
+            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
+    ) {
+        return advertService.getAllAdverts(pageNo, pageSize, sortField, sortDirection);
     }
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
-        return ResponseEntity.ok(advertService.createAdvert(advert, principal).getMessage());
+    public String createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
+        return advertService.createAdvert(advert, principal);
     }
 
     @GetMapping("/{advertId}/comments")
-    public ResponseEntity<?> getAdvertComments(@PathVariable("advertId") Long id) {
-        return ResponseEntity.ok(advertService.getAdvertComments(id).getMessage());
+    public List<OutputCommentDto> getAdvertComments(@PathVariable("advertId") Long id) {
+        return advertService.getAdvertComments(id);
     }
 
     @GetMapping("/{advertId}")
-    public ResponseEntity<?> getAdvert(@PathVariable("advertId") Long advertId) {
-        return ResponseEntity.ok(advertService.getAdvert(advertId).getList());
+    public OutputAdvertDto getAdvert(@PathVariable("advertId") Long advertId) {
+        return advertService.getAdvert(advertId);
     }
 
     @DeleteMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> deleteAdvert(@PathVariable("advertId") Long advertId, Principal principal) {
-        return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal).getMessage());
+    public String deleteAdvert(@PathVariable("advertId") Long advertId, Principal principal) {
+        return advertService.deleteAdvert(advertId, principal);
     }
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody InputAdvertDto advert, Principal principal) {
-        return ResponseEntity.ok(advertService.updateAdvert(advertId, advert, principal).getMessage());
+    public String updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody InputAdvertDto advert, Principal principal) {
+        return advertService.updateAdvert(advertId, advert, principal);
     }
 
     @PutMapping("/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> banAdvert(@RequestBody Long id) {
-        return ResponseEntity.ok(advertService.banAdvert(id).getMessage());
+    public String banAdvert(
+            @Parameter(description = "Id пользователя.") @RequestParam Long id) {
+        return advertService.banAdvert(id);
     }
 }

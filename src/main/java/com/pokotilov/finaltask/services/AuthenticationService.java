@@ -1,7 +1,6 @@
 package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.user.AuthUserRequest;
-import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
@@ -22,7 +21,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public DefaultResponse register(RegisterUserRequest request) {
+    public String register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserAlreadyExistException("User with this email already exist");
         }
@@ -39,16 +38,16 @@ public class AuthenticationService {
                 .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return new DefaultResponse(jwtToken);
+        return jwtToken;
     }
 
-    public DefaultResponse authenticate(AuthUserRequest request) {
+    public String authenticate(AuthUserRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User doesn't exist"));
         var jwtToken = jwtService.generateToken(user);
-        return new DefaultResponse(jwtToken);
+        return jwtToken;
     }
 }

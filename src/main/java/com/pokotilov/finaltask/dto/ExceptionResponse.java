@@ -13,7 +13,7 @@ public class ExceptionResponse {
     private String message;
     private Map<String, String> map;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime time = LocalDateTime.now();
+    private final LocalDateTime time = LocalDateTime.now();
 
     public ExceptionResponse(HttpStatus status, String message) {
         this.status = status;

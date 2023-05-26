@@ -1,23 +1,25 @@
 package com.pokotilov.finaltask.services;
 
-import com.pokotilov.finaltask.dto.DefaultResponse;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
+import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
-import com.pokotilov.finaltask.entities.Comment;
 import com.pokotilov.finaltask.entities.Role;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
 import com.pokotilov.finaltask.mapper.AdvertMapper;
+import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -27,35 +29,46 @@ public class AdvertService {
     private final AdvertRepository advertRepository;
     private final UserRepository userRepository;
     private final AdvertMapper advertMapper;
+    private final CommentMapper commentMapper;
 
-    public DefaultResponse getAllAdverts() {
-        List<OutputAdvertDto> outputAdvertDtos = advertRepository.findAll().stream()
-                .map(advertMapper::toDto).toList();
-        return new DefaultResponse(Collections.singletonList(outputAdvertDtos));
+    public Page<OutputAdvertDto> getAllAdverts(int pageNo, int pageSize, String sortField, String sortDirection) {
+        Pageable pageable;
+        Sort sort;
+        if (sortDirection != null) {
+            sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                    Sort.by(sortField).ascending() :
+                    Sort.by(sortField).descending();
+            pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+        } else if (sortField != null) {
+            sort = Sort.by(sortField).ascending();
+            pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+        } else {
+            pageable = PageRequest.of(pageNo - 1, pageSize);
+        }
+        Page<Advert> page = advertRepository.findAll(pageable);
+        return page.map(advertMapper::toDto);
     }
 
-    public DefaultResponse getAdvert(Long advertId) {
+    public OutputAdvertDto getAdvert(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
-        OutputAdvertDto dto = advertMapper.toDto(advert);
-        return new DefaultResponse(List.of(dto));
+        return advertMapper.toDto(advert);
     }
 
-    public DefaultResponse createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
+    public String createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
         User user = getUserByPrincipal(principal);
         Advert advert = Advert.builder()
                 .title(inputAdvertDto.getTitle())
                 .description(inputAdvertDto.getDescription())
-                .date(LocalDateTime.now())
                 .price(inputAdvertDto.getPrice())
                 .premium(false)
                 .user(user)
                 .ban(false)
                 .build();
         advertRepository.save(advert);
-        return new DefaultResponse("Successful add");
+        return "Successful add";
     }
 
-    public DefaultResponse updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
+    public String updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(advertId);
         User user = getUserByPrincipal(principal);
         if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
@@ -63,30 +76,29 @@ public class AdvertService {
         }
         advertMapper.updateAdvert(inputAdvertDto, advert);
         advertRepository.save(advert);
-        return new DefaultResponse("Successful edited");
+        return "Successful edited";
     }
 
-    public DefaultResponse deleteAdvert(Long advertId, Principal principal) {
+    public String deleteAdvert(Long advertId, Principal principal) {
         Advert advert = advertRepository.getReferenceById(advertId);
         User user = getUserByPrincipal(principal);
         if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
             throw new AccessDeniedException("Unauthorized");
         }
         advertRepository.deleteById(advertId);
-        return new DefaultResponse("Successful deleted");
+        return "Successful deleted";
     }
 
-    public DefaultResponse banAdvert(Long id) {
+    public String banAdvert(Long id) {
         Advert advert = advertRepository.getReferenceById(id);
         advert.setBan(true);
         advertRepository.save(advert);
-        return new DefaultResponse("Successful block");
+        return "Successful block";
     }
 
-    public DefaultResponse getAdvertComments(Long advertId) {
+    public List<OutputCommentDto> getAdvertComments(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
-        List<Comment> comments = advert.getComments();
-        return new DefaultResponse(Collections.singletonList(comments));
+        return advert.getComments().stream().filter(comment -> !comment.getBan()).map(commentMapper::toDto).toList();
     }
 
     private User getUserByPrincipal(Principal principal) {

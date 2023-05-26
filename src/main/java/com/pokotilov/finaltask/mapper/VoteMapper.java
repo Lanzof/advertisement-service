@@ -6,6 +6,5 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface VoteMapper {
-    Vote toVote(VoteDto voteDto);
     VoteDto toDto(Vote vote);
 }

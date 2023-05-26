@@ -1,13 +1,12 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.CommentDto;
+import com.pokotilov.finaltask.dto.comments.InputCommentDto;
 import com.pokotilov.finaltask.services.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +23,14 @@ public class CommentController {
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> createComment(@Valid @RequestBody CommentDto comment, Principal principal) {
-        return ResponseEntity.ok(commentService.createComment(comment, principal).getMessage());
+    public String createComment(@Valid @RequestBody InputCommentDto comment, Principal principal) {
+        return commentService.createComment(comment, principal);
     }
 
     @PutMapping("/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> banComment(@RequestBody Long id) {
-        return ResponseEntity.ok(commentService.banComment(id).getMessage());
+    public String banComment(@RequestBody Long id) {
+        return commentService.banComment(id);
     }
 }

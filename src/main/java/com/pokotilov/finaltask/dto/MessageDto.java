@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MessageDto {
     private Long chatId;
+    private Long id;
     @NotBlank
     private String text;
     private LocalDateTime date;
+    private String senderName;
 }

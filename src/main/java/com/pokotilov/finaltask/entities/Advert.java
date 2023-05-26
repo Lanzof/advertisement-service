@@ -1,19 +1,16 @@
 package com.pokotilov.finaltask.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,7 +23,8 @@ public class Advert {
     private Long id;
     private String title;
     private String description;
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    @CreationTimestamp
+    @Column(updatable = false, nullable = false)
     private LocalDateTime date;
     private Integer price;
     private Boolean premium;
@@ -36,11 +34,24 @@ public class Advert {
     private User user;
     private Boolean ban;
 
-    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("date ASC")
     private List<Comment> comments = new ArrayList<>();
-    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vote> votes = new ArrayList<>();
-    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL,orphanRemoval = true)
-    private Set<Chat> chats = new HashSet<>();
+    @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chats = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Advert advert = (Advert) o;
+        return Objects.equals(id, advert.id) && Objects.equals(title, advert.title) && Objects.equals(description, advert.description) && Objects.equals(price, advert.price);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, price);
+    }
 }

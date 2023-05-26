@@ -1,6 +1,7 @@
 package com.pokotilov.finaltask.advice;
 
 import com.pokotilov.finaltask.dto.ExceptionResponse;
+import com.pokotilov.finaltask.exceptions.ChatException;
 import com.pokotilov.finaltask.exceptions.SelfVoteException;
 import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
 import com.pokotilov.finaltask.exceptions.UserNotFoundException;
@@ -39,6 +40,13 @@ public class ControllerAdviceExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public final ExceptionResponse handleSelfVoteExceptions(SelfVoteException ex) {
+//        log.error(ex.getMessage(), ex);
+        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public final ExceptionResponse handleChatExceptions(ChatException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
