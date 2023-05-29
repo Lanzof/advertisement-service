@@ -4,9 +4,9 @@ import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.entities.*;
-import com.pokotilov.finaltask.exceptions.SelfVoteException;
-import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
+import com.pokotilov.finaltask.exceptions.BadRequestException;
+import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.mapper.UserMapper;
 import com.pokotilov.finaltask.mapper.VoteMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
@@ -60,7 +60,7 @@ public class UserService {
             throw new AccessDeniedException("Unauthorized");
         }
         if (userRepository.existsByEmail(updateUserRequest.getEmail())) {
-            throw new UserAlreadyExistException("User with this email already exist");
+            throw new BadRequestException("User with this email already exist");
         }
         userMapper.updateUser(updateUserRequest, user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -80,7 +80,7 @@ public class UserService {
         User user = advert.getUser();
         User author = getUserByPrincipal(principal);
         if (user.getId().equals(author.getId())) {
-            throw new SelfVoteException("You can't vote for yourself");
+            throw new UnprocessableEntityException("You can't vote for yourself");
         }
         Vote vote = Vote.builder()
                 .voteID(VoteID.builder()
@@ -98,11 +98,11 @@ public class UserService {
 
     private User getUserById(Long userId){
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
     }
 
     private User getUserByPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
     }
 }

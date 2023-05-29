@@ -1,10 +1,7 @@
 package com.pokotilov.finaltask.advice;
 
 import com.pokotilov.finaltask.dto.ExceptionResponse;
-import com.pokotilov.finaltask.exceptions.ChatException;
-import com.pokotilov.finaltask.exceptions.SelfVoteException;
-import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -21,7 +18,7 @@ public class ControllerAdviceExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public final ExceptionResponse handleUserNotFoundExceptions(UserNotFoundException ex) {
+    public final ExceptionResponse handleNotFoundExceptions(NotFoundException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
@@ -39,21 +36,21 @@ public class ControllerAdviceExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleSelfVoteExceptions(SelfVoteException ex) {
+    public final ExceptionResponse handleUnprocessableEntityExceptions(UnprocessableEntityException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleChatExceptions(ChatException ex) {
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    public final ExceptionResponse handleChatExceptions(ExpectationFailedException ex) {
 //        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return new ExceptionResponse(HttpStatus.EXPECTATION_FAILED, ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public final ExceptionResponse handleUserAlreadyExistExceptions(UserAlreadyExistException ex) {
+    public final ExceptionResponse handleBadRequestExceptions(BadRequestException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
@@ -63,5 +60,12 @@ public class ControllerAdviceExceptionHandler {
     public final ExceptionResponse handleAccessDeniedExceptions(AccessDeniedException ex) {
 //        log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public final ExceptionResponse handleAccessDeniedExceptions(ConflictException ex) {
+//        log.error(ex.getMessage(), ex);
+        return new ExceptionResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 }

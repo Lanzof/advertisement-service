@@ -6,8 +6,8 @@ import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Chat;
 import com.pokotilov.finaltask.entities.Message;
 import com.pokotilov.finaltask.entities.User;
-import com.pokotilov.finaltask.exceptions.ChatException;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
+import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.mapper.ChatMapper;
 import com.pokotilov.finaltask.mapper.MessageMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
@@ -37,22 +37,22 @@ public class ChatService {
 
     public Long getChat(Long advertId, Long userId, Principal principal) {
         User principalUser =  userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
         Advert advert = advertRepository.getReferenceById(advertId);
         if (userId == null) {
             return getChat(advert, principalUser);
         }
         if (!principalUser.getId().equals(advert.getUser().getId())) {
-            throw new ChatException("You can't request a chat that doesn't belong to you.");
+            throw new UnprocessableEntityException("You can't request a chat that doesn't belong to you.");
         }
         User buyer = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
         return getChat(advert, buyer);
     }
 
     private Long getChat(Advert advert, User user) {
         if (user.getId().equals(advert.getUser().getId())) {
-            throw new ChatException("You can't chat with yourself.");
+            throw new UnprocessableEntityException("You can't chat with yourself.");
         }
         Chat chat;
         if (!chatRepository.existsByAdvert_IdAndBuyer_Id(advert.getId(), user.getId())) {
@@ -68,9 +68,9 @@ public class ChatService {
 
     public String sendMessage(Long chatId, String text, Principal principal) {
         Chat chat = chatRepository.getReferenceById(chatId);
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
         if (!chat.getBuyer().getId().equals(user.getId()) && !chat.getAdvert().getUser().getId().equals(user.getId())) {
-            throw new ChatException("It's not your chat");
+            throw new UnprocessableEntityException("It's not your chat");
         }
         Message message = Message.builder()
                 .chat(chat)
@@ -82,7 +82,7 @@ public class ChatService {
     }
 
     public Page<ChatDto> getChats(int pageNo, int pageSize, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
         Page<Chat> page = chatRepository.findChatsByBuyer_IdOrAdvert_User_Id(user.getId(), user.getId(), pageable);
 

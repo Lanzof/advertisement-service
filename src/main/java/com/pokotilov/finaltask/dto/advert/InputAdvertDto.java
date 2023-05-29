@@ -19,5 +19,5 @@ public class InputAdvertDto {
     private String description;
     @NotNull(message = "Price can't be null.")
     @Positive(message = "Price should be positive.")
-    private Integer price;
+    private Double price;
 }

@@ -4,7 +4,7 @@ import com.pokotilov.finaltask.dto.comments.InputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Comment;
 import com.pokotilov.finaltask.entities.User;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.CommentRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
@@ -27,7 +27,7 @@ public class CommentService {
     public String createComment(@Valid @RequestBody InputCommentDto inputCommentDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(inputCommentDto.getAdvertId());
         User user =  userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Comment comment = Comment.builder()
                 .advert(advert)
                 .author(user)

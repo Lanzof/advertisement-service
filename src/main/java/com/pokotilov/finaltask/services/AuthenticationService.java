@@ -3,8 +3,8 @@ package com.pokotilov.finaltask.services;
 import com.pokotilov.finaltask.dto.user.AuthUserRequest;
 import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
 import com.pokotilov.finaltask.entities.User;
-import com.pokotilov.finaltask.exceptions.UserAlreadyExistException;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.BadRequestException;
+import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import com.pokotilov.finaltask.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class AuthenticationService {
 
     public String register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new UserAlreadyExistException("User with this email already exist");
+            throw new BadRequestException("User with this email already exist");
         }
         User user = User.builder()
                 .email(request.getEmail())
@@ -37,8 +37,7 @@ public class AuthenticationService {
                 .role(request.getRole())
                 .build();
         userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        return jwtToken;
+        return jwtService.generateToken(user);
     }
 
     public String authenticate(AuthUserRequest request) {
@@ -46,8 +45,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User doesn't exist"));
-        var jwtToken = jwtService.generateToken(user);
-        return jwtToken;
+                .orElseThrow(() -> new NotFoundException("User doesn't exist"));
+        return jwtService.generateToken(user);
     }
 }

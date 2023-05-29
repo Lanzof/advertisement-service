@@ -46,6 +46,8 @@ public class User implements UserDetails {
     private List<Chat> chats = new ArrayList<>();
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Wallet wallet;
 
 
     @Override

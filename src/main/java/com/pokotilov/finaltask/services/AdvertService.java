@@ -6,7 +6,7 @@ import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Role;
 import com.pokotilov.finaltask.entities.User;
-import com.pokotilov.finaltask.exceptions.UserNotFoundException;
+import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.mapper.AdvertMapper;
 import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
@@ -32,22 +32,20 @@ public class AdvertService {
     private final CommentMapper commentMapper;
 
     public Page<OutputAdvertDto> getAllAdverts(int pageNo, int pageSize, String sortField, String sortDirection) {
-        Pageable pageable;
-        Sort sort;
-        if (sortDirection != null) {
-            sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
-                    Sort.by(sortField).ascending() :
-                    Sort.by(sortField).descending();
-            pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-        } else if (sortField != null) {
-            sort = Sort.by(sortField).ascending();
-            pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-        } else {
-            pageable = PageRequest.of(pageNo - 1, pageSize);
-        }
-        Page<Advert> page = advertRepository.findAll(pageable);
+        Pageable pageable = createPageable(pageNo, pageSize, sortField, sortDirection);
+        Page<Advert> page = advertRepository.getAdvertsByDefaultQuery(pageable);
         return page.map(advertMapper::toDto);
     }
+
+//    public Page<OutputAdvertDto> findAdverts(SearchAdvertDto searchAdvertDto,
+//            int pageNo, int pageSize, String sortField, String sortDirection) {
+//        Advert advert;
+//
+//        Example<Advert> example = Example.of(advert, exampleMatcher);
+//        Pageable pageable = createPageable(pageNo, pageSize, sortField, sortDirection);
+//        Page<Advert> page = advertRepository.findAdvertsByTitleAndFilters(example,  pageable);
+//        return page.map(advertMapper::toDto);
+//    }
 
     public OutputAdvertDto getAdvert(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
@@ -103,6 +101,23 @@ public class AdvertService {
 
     private User getUserByPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    private static Pageable createPageable(int pageNo, int pageSize, String sortField, String sortDirection) {
+        Sort sort;
+        if (sortField != null) {
+            if (sortDirection != null) {
+                sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                        Sort.by(sortField).ascending() :
+                        Sort.by(sortField).descending();
+            } else {
+                sort = Sort.by(sortField).ascending();
+            }
+        } else {
+            sort = Sort.by(Sort.Order.desc("u.rating"), Sort.Order.asc("date"));
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize,sort);
+        return pageable;
     }
 }

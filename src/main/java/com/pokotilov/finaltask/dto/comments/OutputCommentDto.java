@@ -1,11 +1,11 @@
 package com.pokotilov.finaltask.dto.comments;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +19,7 @@ public class OutputCommentDto {
   private Long authorId;
   private String authorFirstName;
   private String authorLastName;
-  @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime date;
   private String text;
   private Boolean ban;

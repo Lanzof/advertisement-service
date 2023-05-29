@@ -1,10 +1,10 @@
 package com.pokotilov.finaltask.dto.advert;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -16,9 +16,9 @@ public class OutputAdvertDto {
     private Long id;
     private String title;
     private String description;
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime date;
-    private Integer price;
+    private Double price;
     private Boolean premium;
     private Long userId;
     private String firstName;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +27,18 @@ public class Advert {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private LocalDateTime date;
-    private Integer price;
-    private Boolean premium;
+    private Double price;
+    private LocalDate premiumEnd;
+    private LocalDate premiumStart;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne//(fetch = FetchType.LAZY) todo check if all adverts become lesser query's
     @JoinColumn(name = "user_id")
     private User user;
+    @Column(columnDefinition = "boolean default false")
     private Boolean ban;
+
+    @Transient
+    private Boolean premium;
 
     @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("date ASC")
@@ -41,6 +47,7 @@ public class Advert {
     private List<Vote> votes = new ArrayList<>();
     @OneToMany(mappedBy = "advert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chat> chats = new ArrayList<>();
+
 
     @Override
     public boolean equals(Object o) {
@@ -53,5 +60,16 @@ public class Advert {
     @Override
     public int hashCode() {
         return Objects.hash(id, title, description, price);
+    }
+
+    public Boolean getPremium() {
+        if (premium == null) {
+            premium = calculatePremiumExpired();
+        }
+        return premium;
+    }
+
+    public Boolean calculatePremiumExpired() {
+        return premiumEnd != null && premiumEnd.isAfter(LocalDate.now());
     }
 }

@@ -12,6 +12,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,10 +57,25 @@ public class AdvertController {
         return advertService.getAllAdverts(pageNo, pageSize, sortField, sortDirection);
     }
 
+//    @GetMapping("/find")
+//    public Page<OutputAdvertDto> findAdverts(
+////            @Parameter(description = "Поисковый запрос по заголовку объявления.") @RequestParam @Nullable String title,
+////            @Parameter(description = "Установка фильтра максимальной цены.") @RequestParam @Nullable Integer priceMax,
+////            @Parameter(description = "Установка фильтра минимальной цены.") @RequestParam @Nullable Integer priceMin,
+////            @Parameter(description = "Установка фильтра минимального рейтинга.") @RequestParam @Nullable Float rating,
+//            @RequestBody(required = false) SearchAdvertDto searchAdvertDto,
+//            @Parameter(description = "№ страницы.", required = true)@RequestParam int pageNo,
+//            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
+//            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
+//            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
+//    ) {
+//        return advertService.findAdverts(searchAdvertDto, pageNo, pageSize, sortField, sortDirection);
+//    } todo make a specification search
+
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public String createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
-        return advertService.createAdvert(advert, principal);
+    public ResponseEntity<String> createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
+        return ResponseEntity.ok(advertService.createAdvert(advert, principal));
     }
 
     @GetMapping("/{advertId}/comments")
@@ -74,21 +90,24 @@ public class AdvertController {
 
     @DeleteMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public String deleteAdvert(@PathVariable("advertId") Long advertId, Principal principal) {
-        return advertService.deleteAdvert(advertId, principal);
+    public ResponseEntity<String> deleteAdvert(
+            @PathVariable("advertId") Long advertId, Principal principal) {
+        return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal));
     }
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public String updateAdvert(@PathVariable("advertId") Long advertId, @Valid @RequestBody InputAdvertDto advert, Principal principal) {
-        return advertService.updateAdvert(advertId, advert, principal);
+    public ResponseEntity<String> updateAdvert(
+            @PathVariable("advertId") Long advertId,
+            @Valid @RequestBody InputAdvertDto advert, Principal principal) {
+        return ResponseEntity.ok(advertService.updateAdvert(advertId, advert, principal));
     }
 
     @PutMapping("/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasAuthority('ADMIN')")
-    public String banAdvert(
+    public ResponseEntity<String> banAdvert(
             @Parameter(description = "Id пользователя.") @RequestParam Long id) {
-        return advertService.banAdvert(id);
+        return ResponseEntity.ok(advertService.banAdvert(id));
     }
 }
