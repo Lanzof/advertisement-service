@@ -1,10 +1,10 @@
 spring:
   liquibase:
-#    enabled: false
-    change-log: classpath:db/db.changelog-master.yaml
+    enabled: true
+    change-log: classpath:db/master.yaml
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 #    show-sql: true
     properties:
       hibernate:

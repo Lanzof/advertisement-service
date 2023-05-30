@@ -8,6 +8,8 @@ services:
     container_name: adverts
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/Final-task
+    depends_on:
+      - postgres
   postgres:
     image: postgres:15.2-alpine
     restart: always

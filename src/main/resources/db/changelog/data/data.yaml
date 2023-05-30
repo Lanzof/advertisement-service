@@ -1,0 +1,100 @@
+databaseChangeLog:
+  - changeSet:
+      id: 11
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/users.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 12
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/adverts.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 13
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/chats.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 14
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/messages.sql
+            relativeToChangelogFile: true
+#            stripComments: true
+  - changeSet:
+      id: 15
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/comments.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 16
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/services.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 17
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/wallets.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 18
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/votes.sql
+            relativeToChangelogFile: true
+            stripComments: true
+  - changeSet:
+      id: 19
+      author: Pokotilov Sergey
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            path: data/transactions_history.sql
+            relativeToChangelogFile: true
+            stripComments: true
