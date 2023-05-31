@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    container_name: adverts
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/Final-task
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Cka4at
+      POSTGRES_DB: Final-task
+    volumes:
+      - db-data:/var/lib/postgresql/data
+#      - ./db:/docker-entrypoint-initdb.d
+#    ports:
+#      - "5432:5432"
+volumes:
+  db-data:
+    driver: local

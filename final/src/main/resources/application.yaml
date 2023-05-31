@@ -1,0 +1,29 @@
+spring:
+  liquibase:
+    enabled: true
+    change-log: classpath:db/master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: none
+#    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost/Final-task
+    username: postgres
+    password: Cka4at
+
+jwt:
+  header: Authorization
+  secret: 2F413F442A472D4B6150645367566B59703373367639792442264529482B4D62
+  expiration: 15
+
+server:
+  error:
+    include-message: always
