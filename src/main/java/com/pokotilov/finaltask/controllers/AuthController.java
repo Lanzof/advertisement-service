@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,13 +24,13 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public String logIn(@Valid @RequestBody AuthUserRequest request) {
-        return authenticationService.authenticate(request);
+    public ResponseEntity<String> logIn(@Valid @RequestBody AuthUserRequest request) {
+        return ResponseEntity.ok().body(authenticationService.authenticate(request));
     }
 
     @PostMapping("/signup")
-    public String signUp(@Valid @RequestBody RegisterUserRequest request) {
-        return authenticationService.register(request);
+    public ResponseEntity<String> signUp(@Valid @RequestBody RegisterUserRequest request) {
+        return ResponseEntity.ok().body(authenticationService.register(request));
     }
 
     @PostMapping("/logout")

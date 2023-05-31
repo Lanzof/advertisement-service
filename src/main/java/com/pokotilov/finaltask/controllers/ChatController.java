@@ -10,6 +10,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -24,20 +25,20 @@ public class ChatController {
     private final ChatService chatService;
 
     @GetMapping
-    public Long getChat(
+    public ResponseEntity<Long> getChat(
             @Parameter(description = "Id объявления в котором вы хотите получить чат.") @RequestParam Long advertId,
             @Parameter(description = "Если вы являетесь владельцем объявления, вам так же нужно указать с каким пользователем чат вы хотите получить")
             @RequestParam(required = false) @Nullable Long userId,
             Principal principal) {
-        return chatService.getChat(advertId, userId, principal);
+        return ResponseEntity.ok().body(chatService.getChat(advertId, userId, principal));
     }
 
     @PostMapping("/message")
-    public String sendMessage(
+    public ResponseEntity<String> sendMessage(
             @Parameter(description = "Id чата.") @RequestParam Long chatId,
             @Parameter(description = "Текст сообщения.") @RequestParam @NotBlank String text,
             Principal principal) {
-        return chatService.sendMessage(chatId, text, principal);
+        return ResponseEntity.ok().body(chatService.sendMessage(chatId, text, principal));
     }
 
     @GetMapping("/all")

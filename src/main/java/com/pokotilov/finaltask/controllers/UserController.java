@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,23 +42,23 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public String deleteUser(@PathVariable("userId") Long userId, Principal principal) {
-        return userService.deleteUser(userId, principal);
+    public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, Principal principal) {
+        return ResponseEntity.ok().body(userService.deleteUser(userId, principal));
     }
 
     @PostMapping("/{userId}")
-    public String updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
-        return userService.updateUser(id, user, principal);
+    public ResponseEntity<String> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
+        return ResponseEntity.ok().body(userService.updateUser(id, user, principal));
     }
 
     @PutMapping("/block")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public String banUser(@RequestBody Long id) {
-        return userService.banUser(id);
+    public ResponseEntity<String> banUser(@RequestBody Long id) {
+        return ResponseEntity.ok().body(userService.banUser(id));
     }
 
     @PostMapping("/vote")
-    public String voteUser(@Valid @RequestBody VoteDto voteDto, Principal principal) {
-        return userService.voteUser(voteDto, principal);
+    public ResponseEntity<String> voteUser(@Valid @RequestBody VoteDto voteDto, Principal principal) {
+        return ResponseEntity.ok().body(userService.voteUser(voteDto, principal));
     }
 }
