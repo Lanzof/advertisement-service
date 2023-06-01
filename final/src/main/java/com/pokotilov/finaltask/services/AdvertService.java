@@ -2,6 +2,7 @@ package com.pokotilov.finaltask.services;
 
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.SearchAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Role;
@@ -11,11 +12,9 @@ import com.pokotilov.finaltask.mapper.AdvertMapper;
 import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.UserRepository;
+import com.pokotilov.finaltask.util.Spec;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -31,21 +30,26 @@ public class AdvertService {
     private final AdvertMapper advertMapper;
     private final CommentMapper commentMapper;
 
-    public Page<OutputAdvertDto> getAllAdverts(int pageNo, int pageSize, String sortField, String sortDirection) {
-        Pageable pageable = createPageable(pageNo, pageSize, sortField, sortDirection);
-        Page<Advert> page = advertRepository.getAdvertsByDefaultQuery(pageable);
-        return page.map(advertMapper::toDto);
-    }
-
-//    public Page<OutputAdvertDto> findAdverts(SearchAdvertDto searchAdvertDto,
-//            int pageNo, int pageSize, String sortField, String sortDirection) {
-//        Advert advert;
-//
-//        Example<Advert> example = Example.of(advert, exampleMatcher);
+//    public Page<OutputAdvertDto> getAllAdverts(int pageNo, int pageSize, String sortField, String sortDirection) {
 //        Pageable pageable = createPageable(pageNo, pageSize, sortField, sortDirection);
-//        Page<Advert> page = advertRepository.findAdvertsByTitleAndFilters(example,  pageable);
+//        Page<Advert> page = advertRepository.getAdvertsByDefaultQuery(pageable);
 //        return page.map(advertMapper::toDto);
 //    }
+
+    public Page<OutputAdvertDto> findAdverts(String title, Double priceMax, Double priceMin, Float rating,
+                                             int pageNo, int pageSize, String sortField, String sortDirection) {
+        Spec spec = Spec.builder()
+                .title(title)
+                .minPrice(priceMin)
+                .maxPrice(priceMax)
+                .rating(rating)
+                .sortField(sortField)
+                .sortDirection(sortDirection)
+                .build();
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Page<Advert> page = advertRepository.findAll(spec, pageable);
+        return page.map(advertMapper::toDto);
+    }
 
     public OutputAdvertDto getAdvert(Long advertId) {
         Advert advert = advertRepository.getReferenceById(advertId);
@@ -102,22 +106,5 @@ public class AdvertService {
     private User getUserByPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new NotFoundException("User not found"));
-    }
-
-    private static Pageable createPageable(int pageNo, int pageSize, String sortField, String sortDirection) {
-        Sort sort;
-        if (sortField != null) {
-            if (sortDirection != null) {
-                sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
-                        Sort.by(sortField).ascending() :
-                        Sort.by(sortField).descending();
-            } else {
-                sort = Sort.by(sortField).ascending();
-            }
-        } else {
-            sort = Sort.by(Sort.Order.desc("u.rating"), Sort.Order.asc("date"));
-        }
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize,sort);
-        return pageable;
     }
 }

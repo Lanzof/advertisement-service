@@ -4,30 +4,25 @@ import com.pokotilov.finaltask.entities.Advert;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AdvertRepository extends JpaRepository<Advert, Long> {
-    Page<Advert> getAdvertsByBanFalseAndAndUser_BanFalse(Pageable pageable);
+public interface AdvertRepository extends JpaRepository<Advert, Long>, JpaSpecificationExecutor<Advert> {
+
     @Query(value = "SELECT a.* FROM public.adverts a " +
-            "LEFT JOIN users u ON u.id = a.user_id " +
-            "WHERE a.ban = false AND u.ban = false " +
+            "WHERE a.ban = false " +
             "ORDER BY a.premium_end > now() DESC",
             countQuery = "SELECT count(*) FROM public.adverts a " +
-                    "LEFT JOIN users u ON u.id = a.user_id WHERE a.ban = false AND u.ban = false",
+                    "WHERE a.ban = false ",
             nativeQuery = true)
     Page<Advert> getAdvertsByDefaultQuery(Pageable pageable);
 
-    @Query(value = "SELECT a.* FROM public.adverts a " +
-            "LEFT JOIN users u ON u.id = a.user_id " +
-            "WHERE a.ban = false AND u.ban = false " +
-            "ORDER BY a.premium_end > now() DESC",
-            countQuery = "SELECT count(*) FROM public.adverts a " +
-                    "LEFT JOIN users u ON u.id = a.user_id WHERE a.ban = false AND u.ban = false",
-            nativeQuery = true)
-    Page<Advert> findAdvertsByTitleAndFilters(Example<Advert> example, Pageable pageable);
+
+
 }
 
 //    @Query(value = "SELECT a.* FROM public.adverts a " +

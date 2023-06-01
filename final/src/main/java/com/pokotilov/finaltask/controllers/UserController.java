@@ -26,11 +26,6 @@ public class UserController {
 
     private final UserService userService;
 
-//    @GetMapping("/paged")
-//    public ResponseEntity<?> getAllUsers() {
-//        return ResponseEntity.ok(userService.getAllUsers().getList());
-//    }
-
     @GetMapping
     public Page<UserDto> getAllUsers(@ParameterObject Pageable pageable) {
         return userService.getAllUsers(pageable);

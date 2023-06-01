@@ -71,6 +71,7 @@ public class UserService {
     public String banUser(Long id) {
         User user = getUserById(id);
         user.setBan(true);
+        user.getAdverts().forEach(advert -> advert.setBan(true));
         userRepository.save(user);
         return "Successful block";
     }

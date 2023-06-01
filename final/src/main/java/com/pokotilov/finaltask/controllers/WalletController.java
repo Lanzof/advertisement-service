@@ -53,12 +53,12 @@ public class WalletController {
     }
 
     @GetMapping("/history")
-    private List<Transaction> showTransactionHistory(Principal principal) {
+    public List<Transaction> showTransactionHistory(Principal principal) {
         return walletService.showHistory(principal);
     }
 
     @GetMapping("/services")
-    private List<PremiumService> showServices(){
+    public List<PremiumService> showServices(){
         return walletService.showServices();
     }
 }

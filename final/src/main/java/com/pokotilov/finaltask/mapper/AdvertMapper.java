@@ -19,6 +19,8 @@ public interface AdvertMapper {
             expression = "java(advert.getUser().getLastName())")
     @Mapping(target = "commentsCount",
             expression = "java(advert.getComments().size())")
+    @Mapping(target = "userRating",
+            expression = "java(advert.getUser().getRating())")
     OutputAdvertDto toDto(Advert advert);
 
     @Mapping(target = "title", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

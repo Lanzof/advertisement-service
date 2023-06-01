@@ -26,12 +26,12 @@ public class Advert {
     private String description;
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
-    private LocalDateTime date;
+    private LocalDate date;
     private Double price;
     private LocalDate premiumEnd;
     private LocalDate premiumStart;
 
-    @ManyToOne//(fetch = FetchType.LAZY) todo check if all adverts become lesser query's
+    @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
     @Column(columnDefinition = "boolean default false")

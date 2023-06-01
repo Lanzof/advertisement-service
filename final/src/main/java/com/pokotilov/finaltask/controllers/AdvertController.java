@@ -2,6 +2,7 @@ package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.SearchAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.services.AdvertService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,30 +48,29 @@ public class AdvertController {
 //        array = @ArraySchema(schema = @Schema(type = "string")))
 
 //public @ResponseBody void sort(@Parameter(hidden = true) Sort sort) {
-    @GetMapping
-    public Page<OutputAdvertDto> getAllAdverts(
-            @Parameter(description = "№ страницы.", required = true) @RequestParam int pageNo,
-            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
-            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
-            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
-    ) {
-        return advertService.getAllAdverts(pageNo, pageSize, sortField, sortDirection);
-    }
-
-//    @GetMapping("/find")
-//    public Page<OutputAdvertDto> findAdverts(
-////            @Parameter(description = "Поисковый запрос по заголовку объявления.") @RequestParam @Nullable String title,
-////            @Parameter(description = "Установка фильтра максимальной цены.") @RequestParam @Nullable Integer priceMax,
-////            @Parameter(description = "Установка фильтра минимальной цены.") @RequestParam @Nullable Integer priceMin,
-////            @Parameter(description = "Установка фильтра минимального рейтинга.") @RequestParam @Nullable Float rating,
-//            @RequestBody(required = false) SearchAdvertDto searchAdvertDto,
-//            @Parameter(description = "№ страницы.", required = true)@RequestParam int pageNo,
+//    @GetMapping
+//    public Page<OutputAdvertDto> getAllAdverts(
+//            @Parameter(description = "№ страницы.", required = true) @RequestParam int pageNo,
 //            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
 //            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
 //            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
 //    ) {
-//        return advertService.findAdverts(searchAdvertDto, pageNo, pageSize, sortField, sortDirection);
-//    } todo make a specification search
+//        return advertService.getAllAdverts(pageNo, pageSize, sortField, sortDirection);
+//    }
+
+    @GetMapping("/find")
+    public Page<OutputAdvertDto> findAdverts(
+            @Parameter(description = "Поисковый запрос по заголовку объявления.") @RequestParam @Nullable String title,
+            @Parameter(description = "Установка фильтра максимальной цены.") @RequestParam @Nullable Double priceMax,
+            @Parameter(description = "Установка фильтра минимальной цены.") @RequestParam @Nullable Double priceMin,
+            @Parameter(description = "Установка фильтра минимального рейтинга.") @RequestParam @Nullable Float rating,
+            @Parameter(description = "№ страницы.", required = true)@RequestParam int pageNo,
+            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
+            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
+            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
+    ) {
+        return advertService.findAdverts(title, priceMax, priceMin, rating, pageNo, pageSize, sortField, sortDirection);
+    }
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
