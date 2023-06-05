@@ -2,6 +2,8 @@ package com.pokotilov.finaltask.advice;
 
 import com.pokotilov.finaltask.dto.ExceptionResponse;
 import com.pokotilov.finaltask.exceptions.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -30,6 +32,17 @@ public class ControllerAdviceExceptionHandler {
         Map<String, String> violations = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             violations.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public final ExceptionResponse handleValidationExceptions(ConstraintViolationException ex) {
+//        log.error(ex.getMessage(), ex);
+        Map<String, String> violations = new HashMap<>();
+        for (ConstraintViolation<?> fieldError : ex.getConstraintViolations()) {
+            violations.put(String.valueOf(fieldError.getPropertyPath()), fieldError.getMessage());
         }
         return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
     }

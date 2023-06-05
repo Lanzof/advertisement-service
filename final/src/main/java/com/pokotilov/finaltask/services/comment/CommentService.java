@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.services;
+package com.pokotilov.finaltask.services.comment;
 
 import com.pokotilov.finaltask.dto.comments.InputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
@@ -17,15 +17,16 @@ import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService {
+public class CommentService implements ICommentService {
 
     private final AdvertRepository advertRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
 
-    public String createComment(@Valid @RequestBody InputCommentDto inputCommentDto, Principal principal) {
-        Advert advert = advertRepository.getReferenceById(inputCommentDto.getAdvertId());
+    @Override
+    public String createComment(InputCommentDto inputCommentDto, Principal principal) {
+        Advert advert = advertRepository.findById(inputCommentDto.getAdvertId()).orElseThrow(() -> new NotFoundException("This advert doesn't exist."));
         User user =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         Comment comment = Comment.builder()
@@ -38,6 +39,7 @@ public class CommentService {
         return "Successful add";
     }
 
+    @Override
     public String banComment(Long commentId) {
         Comment comment = commentRepository.getReferenceById(commentId);
         comment.setBan(true);

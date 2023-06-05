@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 @Data
 @Builder
@@ -26,11 +27,6 @@ public class UpdateUserRequest {
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~]).{8,}$",
             message = "password should contain one upper and one lower case latin symbol and special character")
     private String password;
-    @Schema(example = "+77894561212")
-    @NotBlank(message = "phone is blank")
-    @Pattern(regexp = "^\\+?\\d*$",
-            message = "phone number should be +7(xxx)xxxxxxx")
-    private String phone;
     @Schema(example = "Pablo")
     @NotBlank(message = "first name is blank")
     @Pattern(regexp = "[a-zA-ZА-Яа-я \\-]*$")
@@ -39,5 +35,11 @@ public class UpdateUserRequest {
     @NotBlank(message = "last name is blank")
     @Pattern(regexp = "[a-zA-ZА-Яа-я \\-]*$")
     private String lastName;
+    @Schema(example = "+77894561212")
+    @NotBlank(message = "phone is blank")
+    @Pattern(regexp = "^\\+?\\d*$",
+            message = "phone number should be +7(xxx)xxxxxxx")
+    private String phone;
+    @Nullable
     private String description;
 }

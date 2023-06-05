@@ -3,7 +3,7 @@ package com.pokotilov.finaltask.controllers;
 import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.dto.user.UserDto;
-import com.pokotilov.finaltask.services.UserService;
+import com.pokotilov.finaltask.services.user.IUserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,36 +24,36 @@ import java.security.Principal;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService IUserService;
 
     @GetMapping
     public Page<UserDto> getAllUsers(@ParameterObject Pageable pageable) {
-        return userService.getAllUsers(pageable);
+        return IUserService.getAllUsers(pageable);
     }
 
     @GetMapping("/{userId}")
     public UserDto getUser(@PathVariable("userId") Long userId) {
-        return userService.getUser(userId);
+        return IUserService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, Principal principal) {
-        return ResponseEntity.ok().body(userService.deleteUser(userId, principal));
+        return ResponseEntity.ok().body(IUserService.deleteUser(userId, principal));
     }
 
     @PostMapping("/{userId}")
     public ResponseEntity<String> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
-        return ResponseEntity.ok().body(userService.updateUser(id, user, principal));
+        return ResponseEntity.ok().body(IUserService.updateUser(id, user, principal));
     }
 
     @PutMapping("/block")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> banUser(@RequestBody Long id) {
-        return ResponseEntity.ok().body(userService.banUser(id));
+        return ResponseEntity.ok().body(IUserService.banUser(id));
     }
 
     @PostMapping("/vote")
     public ResponseEntity<String> voteUser(@Valid @RequestBody VoteDto voteDto, Principal principal) {
-        return ResponseEntity.ok().body(userService.voteUser(voteDto, principal));
+        return ResponseEntity.ok().body(IUserService.voteUser(voteDto, principal));
     }
 }

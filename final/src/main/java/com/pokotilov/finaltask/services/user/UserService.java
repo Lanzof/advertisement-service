@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.services;
+package com.pokotilov.finaltask.services.user;
 
 import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,14 +35,17 @@ public class UserService {
 
     private static final String USER_NOT_FOUND = "User not found";
 
+    @Override
     public Page<UserDto> getAllUsers(Pageable pageable) { //todo add default sort
         return userRepository.findAll(pageable).map(userMapper::toDto);
     }
 
+    @Override
     public UserDto getUser(Long userId) {
         return userMapper.toDto(getUserById(userId));
     }
 
+    @Override
     public String deleteUser(Long userId, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
@@ -53,6 +56,7 @@ public class UserService {
         return "User successfully deleted";
     }
 
+    @Override
     public String updateUser(Long userId, UpdateUserRequest updateUserRequest, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
@@ -68,6 +72,7 @@ public class UserService {
         return "Successful editing";
     }
 
+    @Override
     public String banUser(Long id) {
         User user = getUserById(id);
         user.setBan(true);
@@ -76,6 +81,7 @@ public class UserService {
         return "Successful block";
     }
 
+    @Override
     public String voteUser(VoteDto voteDto, Principal principal) {
         Advert advert = advertRepository.getReferenceById(voteDto.getAdvertId());
         User user = advert.getUser();

@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.services;
+package com.pokotilov.finaltask.services.chat;
 
 import com.pokotilov.finaltask.dto.ChatDto;
 import com.pokotilov.finaltask.dto.MessageDto;
@@ -25,7 +25,7 @@ import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatService implements IChatService {
 
     public static final String USER_NOT_FOUND = "User not found";
     private final ChatRepository chatRepository;
@@ -35,6 +35,7 @@ public class ChatService {
     private final ChatMapper chatMapper;
     private final MessageMapper messageMapper;
 
+    @Override
     public Long getChat(Long advertId, Long userId, Principal principal) {
         User principalUser =  userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
@@ -66,6 +67,7 @@ public class ChatService {
         return chat.getId();
     }
 
+    @Override
     public String sendMessage(Long chatId, String text, Principal principal) {
         Chat chat = chatRepository.getReferenceById(chatId);
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
@@ -81,7 +83,8 @@ public class ChatService {
         return "Successful send";
     }
 
-    public Page<ChatDto> getChats(int pageNo, int pageSize, Principal principal) {
+    @Override
+    public Page<ChatDto> getChats(Integer pageNo, Integer pageSize, Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
         Page<Chat> page = chatRepository.findChatsByBuyer_IdOrAdvert_User_Id(user.getId(), user.getId(), pageable);
@@ -89,7 +92,8 @@ public class ChatService {
         return page.map(chatMapper::toDto);
     }
 
-    public Page<MessageDto> getChatMessages(int pageNo, int pageSize, Long chatId) {
+    @Override
+    public Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId) {
         Sort sort = Sort.by("date").ascending();
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Message> page = messageRepository.findAllByChat_Id(chatId, pageable);

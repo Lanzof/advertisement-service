@@ -2,7 +2,7 @@ package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.entities.PremiumService;
 import com.pokotilov.finaltask.entities.Transaction;
-import com.pokotilov.finaltask.services.WalletService;
+import com.pokotilov.finaltask.services.wallet.IWalletService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,45 +20,45 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class WalletController {
 
-    private final WalletService walletService;
+    private final IWalletService IWalletService;
 
     @PostMapping
     public ResponseEntity<String> createWallet(Principal principal) {
-        return ResponseEntity.ok(walletService.createWallet(principal));
+        return ResponseEntity.ok(IWalletService.createWallet(principal));
     }
 
     @GetMapping
     public ResponseEntity<String> getWallet(Principal principal) {
-        return ResponseEntity.ok(walletService.getWallet(principal));
+        return ResponseEntity.ok(IWalletService.getWallet(principal));
     }
 
     @GetMapping("/advert")
     public ResponseEntity<String> buyAdvert(Principal principal,
             @Parameter(description = "Id объявления.", required = true) @RequestParam Long advertId) {
-        return ResponseEntity.ok(walletService.buyAdvert(principal, advertId));
+        return ResponseEntity.ok(IWalletService.buyAdvert(principal, advertId));
     }
 
     @GetMapping("/service")
     public ResponseEntity<String> buyService(Principal principal,
             @Parameter(description = "Id сервиса.", required = true) @RequestParam Long serviceId,
             @Parameter(description = "Id объявления.", required = true) @RequestParam Long advertId) {
-        return ResponseEntity.ok(walletService.buyService(principal, serviceId, advertId));
+        return ResponseEntity.ok(IWalletService.buyService(principal, serviceId, advertId));
     }
 
     @PostMapping("/add")
     public ResponseEntity<String> makeDeposit(
             @Parameter(description = "Количество денег.", required = true) @RequestParam Double amount,
             Principal principal) {
-        return ResponseEntity.ok().body(walletService.deposit(amount, principal));
+        return ResponseEntity.ok().body(IWalletService.deposit(amount, principal));
     }
 
     @GetMapping("/history")
     public List<Transaction> showTransactionHistory(Principal principal) {
-        return walletService.showHistory(principal);
+        return IWalletService.showHistory(principal);
     }
 
     @GetMapping("/services")
     public List<PremiumService> showServices(){
-        return walletService.showServices();
+        return IWalletService.showServices();
     }
 }

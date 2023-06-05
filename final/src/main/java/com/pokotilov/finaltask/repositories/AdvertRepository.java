@@ -23,6 +23,7 @@ public interface AdvertRepository extends JpaRepository<Advert, Long>, JpaSpecif
 
 
 
+
 }
 
 //    @Query(value = "SELECT a.* FROM public.adverts a " +

@@ -24,6 +24,5 @@ public class OutputAdvertDto {
     private Long userId;
     private String firstName;
     private String lastName;
-    private Integer commentsCount;
     private Float userRating;
 }

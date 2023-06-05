@@ -1,8 +1,7 @@
-package com.pokotilov.finaltask.services;
+package com.pokotilov.finaltask.services.advert;
 
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
-import com.pokotilov.finaltask.dto.advert.SearchAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Role;
@@ -23,21 +22,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AdvertService {
+public class AdvertService implements IAdvertService {
 
     private final AdvertRepository advertRepository;
     private final UserRepository userRepository;
     private final AdvertMapper advertMapper;
     private final CommentMapper commentMapper;
 
-//    public Page<OutputAdvertDto> getAllAdverts(int pageNo, int pageSize, String sortField, String sortDirection) {
-//        Pageable pageable = createPageable(pageNo, pageSize, sortField, sortDirection);
-//        Page<Advert> page = advertRepository.getAdvertsByDefaultQuery(pageable);
-//        return page.map(advertMapper::toDto);
-//    }
 
     public Page<OutputAdvertDto> findAdverts(String title, Double priceMax, Double priceMin, Float rating,
-                                             int pageNo, int pageSize, String sortField, String sortDirection) {
+                                             Integer pageNo, Integer pageSize, String sortField, String sortDirection) {
         Spec spec = Spec.builder()
                 .title(title)
                 .minPrice(priceMin)
@@ -51,12 +45,16 @@ public class AdvertService {
         return page.map(advertMapper::toDto);
     }
 
+    @Override
     public OutputAdvertDto getAdvert(Long advertId) {
-        Advert advert = advertRepository.getReferenceById(advertId);
+
+        Advert advert = getAdvertFromRepo(advertId);
         return advertMapper.toDto(advert);
     }
 
-    public String createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
+    @Override
+    public OutputAdvertDto createAdvert(InputAdvertDto inputAdvertDto,
+                                        Principal principal) {
         User user = getUserByPrincipal(principal);
         Advert advert = Advert.builder()
                 .title(inputAdvertDto.getTitle())
@@ -66,23 +64,23 @@ public class AdvertService {
                 .user(user)
                 .ban(false)
                 .build();
-        advertRepository.save(advert);
-        return "Successful add";
+        return advertMapper.toDto(advertRepository.save(advert));
     }
 
-    public String updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
-        Advert advert = advertRepository.getReferenceById(advertId);
+    @Override
+    public OutputAdvertDto updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
+        Advert advert = getAdvertFromRepo(advertId);
         User user = getUserByPrincipal(principal);
         if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
             throw new AccessDeniedException("Unauthorized");
         }
         advertMapper.updateAdvert(inputAdvertDto, advert);
-        advertRepository.save(advert);
-        return "Successful edited";
+        return advertMapper.toDto(advertRepository.save(advert));
     }
 
+    @Override
     public String deleteAdvert(Long advertId, Principal principal) {
-        Advert advert = advertRepository.getReferenceById(advertId);
+        Advert advert = getAdvertFromRepo(advertId);
         User user = getUserByPrincipal(principal);
         if ((user.getRole() != Role.ADMIN) && (!advert.getUser().getId().equals(user.getId()))) {
             throw new AccessDeniedException("Unauthorized");
@@ -91,20 +89,25 @@ public class AdvertService {
         return "Successful deleted";
     }
 
-    public String banAdvert(Long id) {
-        Advert advert = advertRepository.getReferenceById(id);
+    @Override
+    public OutputAdvertDto banAdvert(Long id) {
+        Advert advert = getAdvertFromRepo(id);
         advert.setBan(true);
-        advertRepository.save(advert);
-        return "Successful block";
+        return advertMapper.toDto(advertRepository.save(advert));
     }
 
+    @Override
     public List<OutputCommentDto> getAdvertComments(Long advertId) {
-        Advert advert = advertRepository.getReferenceById(advertId);
+        Advert advert = getAdvertFromRepo(advertId);
         return advert.getComments().stream().filter(comment -> !comment.getBan()).map(commentMapper::toDto).toList();
     }
 
     private User getUserByPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    private Advert getAdvertFromRepo(Long advertId) {
+        return advertRepository.findById(advertId).orElseThrow(() -> new NotFoundException("This advert doesn't exist."));
     }
 }

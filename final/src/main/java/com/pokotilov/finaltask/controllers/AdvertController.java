@@ -2,19 +2,22 @@ package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
-import com.pokotilov.finaltask.dto.advert.SearchAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
-import com.pokotilov.finaltask.services.AdvertService;
+import com.pokotilov.finaltask.services.advert.IAdvertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -24,10 +27,10 @@ import java.util.List;
 @RequestMapping("/api/advert")
 @RequiredArgsConstructor
 @Tag(name = "Объявления", description = "Методы для работы с объявлениями.")
-@SecurityRequirement(name = "bearerAuth")
+@Validated
 public class AdvertController {
 
-    private final AdvertService advertService;
+    private final IAdvertService advertService;
 
 //    @PreAuthorize("hasAuthority('ADMIN')")
 //@ApiResponses(value = { todo make all methods have a responses
@@ -64,8 +67,8 @@ public class AdvertController {
             @Parameter(description = "Установка фильтра максимальной цены.") @RequestParam @Nullable Double priceMax,
             @Parameter(description = "Установка фильтра минимальной цены.") @RequestParam @Nullable Double priceMin,
             @Parameter(description = "Установка фильтра минимального рейтинга.") @RequestParam @Nullable Float rating,
-            @Parameter(description = "№ страницы.", required = true)@RequestParam int pageNo,
-            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
+            @Parameter(description = "№ страницы.", required = true) @RequestParam(defaultValue = "1") @NotNull @Min(1) Integer pageNo,
+            @Parameter(description = "Размер страницы.", required = true) @RequestParam(defaultValue = "10") @NotNull @Positive Integer pageSize,
             @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
             @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
     ) {
@@ -74,7 +77,8 @@ public class AdvertController {
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<String> createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OutputAdvertDto> createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.createAdvert(advert, principal));
     }
 
@@ -90,6 +94,7 @@ public class AdvertController {
 
     @DeleteMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> deleteAdvert(
             @PathVariable("advertId") Long advertId, Principal principal) {
         return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal));
@@ -97,7 +102,8 @@ public class AdvertController {
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<String> updateAdvert(
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OutputAdvertDto> updateAdvert(
             @PathVariable("advertId") Long advertId,
             @Valid @RequestBody InputAdvertDto advert, Principal principal) {
         return ResponseEntity.ok(advertService.updateAdvert(advertId, advert, principal));
@@ -106,7 +112,7 @@ public class AdvertController {
     @PutMapping("/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> banAdvert(
+    public ResponseEntity<OutputAdvertDto> banAdvert(
             @Parameter(description = "Id пользователя.") @RequestParam Long id) {
         return ResponseEntity.ok(advertService.banAdvert(id));
     }

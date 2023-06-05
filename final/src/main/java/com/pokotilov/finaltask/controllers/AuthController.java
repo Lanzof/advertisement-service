@@ -2,15 +2,16 @@ package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.user.AuthUserRequest;
 import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
-import com.pokotilov.finaltask.services.AuthenticationService;
+import com.pokotilov.finaltask.services.auth.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Авторизация", description = "Методы авторизации и регистрации.")
 public class AuthController {
 
-    private final AuthenticationService authenticationService;
+    private final IAuthenticationService authenticationService;
 
     @PostMapping("/login")
     public ResponseEntity<String> logIn(@Valid @RequestBody AuthUserRequest request) {
@@ -34,9 +36,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public void logout(HttpServletRequest request, HttpServletResponse response){
-        SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-        securityContextLogoutHandler.logout(request, response, null);
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
+        authenticationService.logout(request, response);
+        return ResponseEntity.ok().body("Logout success");
     }
 }

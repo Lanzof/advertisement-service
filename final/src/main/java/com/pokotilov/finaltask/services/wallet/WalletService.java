@@ -1,4 +1,4 @@
-package com.pokotilov.finaltask.services;
+package com.pokotilov.finaltask.services.wallet;
 
 import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.BadRequestException;
@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class WalletService {
+public class WalletService implements IWalletService {
 
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
@@ -26,6 +26,7 @@ public class WalletService {
     private final ServiceRepository serviceRepository;
 
 
+    @Override
     @Transactional
     public String createWallet(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
@@ -38,6 +39,7 @@ public class WalletService {
         return "Wallet created";
     }
 
+    @Override
     public String getWallet(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
         Wallet wallet = user.getWallet();
@@ -47,6 +49,7 @@ public class WalletService {
         return wallet.getBalance().toString();
     }
 
+    @Override
     @Transactional
     public String buyAdvert(Principal principal, Long advertId) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
@@ -68,6 +71,7 @@ public class WalletService {
         return "Successful transaction";
     }
 
+    @Override
     @Transactional
     public String buyService(Principal principal, Long serviceId, Long advertId) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
@@ -98,6 +102,7 @@ public class WalletService {
         return "Successful transaction";
     }
 
+    @Override
     @Transactional
     public String deposit(Double amount, Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
@@ -116,6 +121,7 @@ public class WalletService {
     }
 
 
+    @Override
     @Transactional
     public List<Transaction> showHistory(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow(() -> new NotFoundException("User not found"));
@@ -126,6 +132,7 @@ public class WalletService {
         return wallet.getTransactionsHistory();
     }
 
+    @Override
     public List<PremiumService> showServices() {
         return serviceRepository.findAll();
     }

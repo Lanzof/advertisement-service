@@ -1,7 +1,7 @@
 package com.pokotilov.finaltask.controllers;
 
 import com.pokotilov.finaltask.dto.comments.InputCommentDto;
-import com.pokotilov.finaltask.services.CommentService;
+import com.pokotilov.finaltask.services.comment.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

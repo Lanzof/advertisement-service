@@ -30,7 +30,7 @@ public class Spec implements Specification<Advert> {
 
         Predicate titleSearch = Optional.ofNullable(title).map(s -> cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%")).orElse(null);
         Predicate maxPricePred = Optional.ofNullable(maxPrice).map(s -> cb.lessThanOrEqualTo(root.get("price"), maxPrice)).orElse(null);
-        Predicate minPricePred = Optional.ofNullable(title).map(s -> cb.greaterThanOrEqualTo(root.get("price"), minPrice)).orElse(null);
+        Predicate minPricePred = Optional.ofNullable(minPrice).map(s -> cb.greaterThanOrEqualTo(root.get("price"), minPrice)).orElse(null);
         Predicate ratingPred = Optional.ofNullable(rating).map(s -> cb.greaterThanOrEqualTo(userJoin.get("rating"), rating)).orElse(null);
 
         List<Predicate> predicates = new ArrayList<>();
