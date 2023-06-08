@@ -3,7 +3,7 @@ package com.pokotilov.finaltask.controllers;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
-import com.pokotilov.finaltask.services.advert.IAdvertService;
+import com.pokotilov.finaltask.services.advert.AdvertService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,7 +30,7 @@ import java.util.List;
 @Validated
 public class AdvertController {
 
-    private final IAdvertService advertService;
+    private final AdvertService advertService;
 
 //    @PreAuthorize("hasAuthority('ADMIN')")
 //@ApiResponses(value = { todo make all methods have a responses
@@ -51,15 +51,6 @@ public class AdvertController {
 //        array = @ArraySchema(schema = @Schema(type = "string")))
 
 //public @ResponseBody void sort(@Parameter(hidden = true) Sort sort) {
-//    @GetMapping
-//    public Page<OutputAdvertDto> getAllAdverts(
-//            @Parameter(description = "№ страницы.", required = true) @RequestParam int pageNo,
-//            @Parameter(description = "Размер страницы.", required = true) @RequestParam int pageSize,
-//            @Parameter(description = "Поле для сортировки.") @RequestParam @Nullable String sortField,
-//            @Parameter(description = "Направление сортировки: asc|desc") @RequestParam @Nullable String sortDirection
-//    ) {
-//        return advertService.getAllAdverts(pageNo, pageSize, sortField, sortDirection);
-//    }
 
     @GetMapping("/find")
     public Page<OutputAdvertDto> findAdverts(

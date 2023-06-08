@@ -3,15 +3,13 @@ package com.pokotilov.finaltask.controllers;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pokotilov.finaltask.dto.user.AuthUserRequest;
-import com.pokotilov.finaltask.security.JwtService;
-import com.pokotilov.finaltask.services.auth.IAuthenticationService;
+import com.pokotilov.finaltask.security.JwtServiceImpl;
+import com.pokotilov.finaltask.services.auth.AuthenticationService;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,9 +29,9 @@ class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private IAuthenticationService authService;
+    private AuthenticationService authService;
     @MockBean
-    private JwtService jwtService;
+    private JwtServiceImpl jwtService;
 
 
     @Test

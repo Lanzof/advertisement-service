@@ -25,4 +25,5 @@ public class OutputAdvertDto {
     private String firstName;
     private String lastName;
     private Float userRating;
+    private Boolean ban;
 }
