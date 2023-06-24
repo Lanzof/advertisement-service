@@ -1,10 +1,17 @@
 package com.pokotilov.finaltask.services.wallet;
 
+import com.pokotilov.finaltask.aop.LogExecution;
+import com.pokotilov.finaltask.dto.TransactionDto;
+import com.pokotilov.finaltask.dto.WalletDto;
+import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.BadRequestException;
 import com.pokotilov.finaltask.exceptions.ConflictException;
 import com.pokotilov.finaltask.exceptions.ExpectationFailedException;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.mapper.AdvertMapper;
+import com.pokotilov.finaltask.mapper.TransactionMapper;
+import com.pokotilov.finaltask.mapper.WalletMapper;
 import com.pokotilov.finaltask.repositories.*;
 import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.user.UserService;
@@ -20,6 +27,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@LogExecution
 public class WalletServiceImpl implements WalletService {
 
     private final UserService userService;
@@ -27,26 +35,30 @@ public class WalletServiceImpl implements WalletService {
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
     private final ServiceRepository serviceRepository;
+    private final WalletMapper walletMapper;
+    private final AdvertMapper advertMapper;
+    private final TransactionMapper transactionMapper;
 
 
     @Override
     @Transactional
-    public String createWallet(Principal principal) {
+    public WalletDto createWallet(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         if (user.getWallet() != null) {
             throw new ConflictException("Wallet already exist");
         }
         Wallet wallet = new Wallet();
+        wallet.setBalance(0.00);
         wallet.setUser(user);
-        walletRepository.save(wallet);
-        return "Wallet created";
+
+        return walletMapper.toDto(walletRepository.save(wallet));
     }
 
     @Override
-    public String getWallet(Principal principal) {
+    public WalletDto getWallet(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
-        return wallet.getBalance().toString();
+        return walletMapper.toDto(wallet);
     }
 
     @Override
@@ -62,7 +74,7 @@ public class WalletServiceImpl implements WalletService {
             throw new BadRequestException("Not enough money in the account wallet");
         }
         wallet.setBalance(wallet.getBalance() - advert.getPrice());
-        String description = String.format("Advert id: %d, title: %s", advertId, advert.getTitle());
+        String description = String.format("Advert id: %d, title: %s has been bought.", advertId, advert.getTitle());
         Transaction transaction = Transaction.builder()
                 .operation(Operation.DECREASE)
                 .sum(advert.getPrice())
@@ -75,7 +87,7 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     @Transactional
-    public String buyService(Principal principal, Long serviceId, Long advertId) {
+    public OutputAdvertDto buyService(Principal principal, Long serviceId, Long advertId) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
         Advert advert = advertService.getAdvertById(advertId);
@@ -83,7 +95,7 @@ public class WalletServiceImpl implements WalletService {
             throw new ExpectationFailedException("Advert does not belong to this user");
         }
         if (Boolean.TRUE.equals(advert.getPremium())) {
-            throw new ConflictException("This advert already has a premium premium");
+            throw new ConflictException("This advert already has a premium");
         }
         if (Boolean.TRUE.equals(advert.getBan())) {
             throw new ConflictException("This advert is banned");
@@ -96,7 +108,8 @@ public class WalletServiceImpl implements WalletService {
         wallet.setBalance(wallet.getBalance() - service.getPrice());
         advert.setPremiumStart(LocalDate.now());
         advert.setPremiumEnd(LocalDate.now().plusDays(service.getDuration()));
-        String description = String.format("Service id: %d, description: %s", serviceId, service.getDescription());
+        advert.setPremium(null);
+        String description = String.format("Service id: %d, description: %s, has been bought for advert %d.", serviceId, service.getDescription(), advert.getId());
         Transaction transaction = Transaction.builder()
                 .operation(Operation.DECREASE)
                 .sum(service.getPrice())
@@ -104,12 +117,12 @@ public class WalletServiceImpl implements WalletService {
                 .description(description)
                 .build();
         transactionRepository.save(transaction);
-        return "Successful transaction";
+        return advertMapper.toDto(advert);
     }
 
     @Override
     @Transactional
-    public Wallet deposit(Double amount, Principal principal) {
+    public WalletDto deposit(Double amount, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
         wallet.setBalance(wallet.getBalance() + amount);
@@ -121,17 +134,16 @@ public class WalletServiceImpl implements WalletService {
                 .description(description)
                 .build();
         transactionRepository.save(transaction);
-//        String.format("User id: %d add %f to wallet, total: %f ", user.getId(), amount, wallet.getBalance())
-        return walletRepository.save(wallet);
+        return walletMapper.toDto(walletRepository.save(wallet));
     }
 
 
     @Override
     @Transactional
-    public List<Transaction> showHistory(Principal principal) {
+    public List<TransactionDto> showHistory(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
-        return wallet.getTransactionsHistory();
+        return wallet.getTransactionsHistory().stream().map(transactionMapper::toDto).toList();
     }
 
     @Override
@@ -140,7 +152,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     private static Wallet getWalletFromUser(User user) {
-        return Optional.of(user.getWallet())
-                .orElseThrow(() -> new EntityNotFoundException("Wallet does not exist"));
+        return Optional.ofNullable(user.getWallet())
+                .orElseThrow(() -> new NotFoundException("Wallet does not exist"));
     }
 }

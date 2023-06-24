@@ -1,5 +1,6 @@
 package com.pokotilov.finaltask.services.auth;
 
+import com.pokotilov.finaltask.aop.LogExecution;
 import com.pokotilov.finaltask.dto.user.AuthUserRequest;
 import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
 import com.pokotilov.finaltask.entities.Role;
@@ -31,7 +32,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${auth.adminCode}")
     private String adminCode;
 
-    @Override
+    @LogExecution
     public String register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("User with this email already exist");
@@ -63,7 +64,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    @Override
+    @LogExecution
     public String authenticate(AuthUserRequest request) {
         try {
             authenticationManager.authenticate(
@@ -72,12 +73,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (AuthenticationException e) {
             throw new BadRequestException("Wrong email or password");
         }
-        var user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("User doesn't exist"));
         return jwtService.generateToken(user);
     }
 
-    @Override
+    @LogExecution
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
         securityContextLogoutHandler.logout(request, response, null);

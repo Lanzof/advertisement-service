@@ -22,7 +22,7 @@ public class Vote {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private LocalDateTime date;
-    private Long vote;
+    private Integer vote;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("advertId")

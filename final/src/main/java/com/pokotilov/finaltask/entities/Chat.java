@@ -10,6 +10,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,25 +22,15 @@ public class Chat {
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "advert_id")
+    @EqualsAndHashCode.Exclude
     private Advert advert;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id")
+    @EqualsAndHashCode.Exclude
     private User buyer;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("date ASC")
+    @EqualsAndHashCode.Exclude
     private List<Message> messageList = new ArrayList<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Chat chat = (Chat) o;
-        return id == chat.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }

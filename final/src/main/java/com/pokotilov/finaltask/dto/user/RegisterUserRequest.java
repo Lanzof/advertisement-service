@@ -15,7 +15,7 @@ import org.springframework.lang.Nullable;
 public class RegisterUserRequest {
     @Schema(example = "someEmail@gmail.com")
     @NotBlank(message = "email is blank")
-    @Email(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",
+    @Pattern(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",
             message = "wrong email")
     private String email;
     @Schema(example = "YourPassword23[]")
@@ -37,8 +37,8 @@ public class RegisterUserRequest {
     @Pattern(regexp = "^\\+?\\d*$",
             message = "phone number should be +7(xxx)xxxxxxx")
     private String phone;
-    @Nullable
+    @Schema(nullable = true)
     private String description;
-    @Nullable
+    @Schema(nullable = true)
     private String referralCode;
 }

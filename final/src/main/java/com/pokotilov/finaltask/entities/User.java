@@ -2,6 +2,8 @@ package com.pokotilov.finaltask.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -45,14 +47,15 @@ public class User implements UserDetails {
     private List<Chat> chats = new ArrayList<>();
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @LazyToOne(LazyToOneOption.NO_PROXY)
     private Wallet wallet;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
-//        authorities.add(new SimpleGrantedAuthority("ROLE_" + role)); todo change authorities to roles
+//        authorities.add(new SimpleGrantedAuthority("ROLE_" + role)); todo change authorities to roles. it's valid way
     }
 
     @Override

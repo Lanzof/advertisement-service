@@ -29,17 +29,4 @@ public class Message {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id")
     private User sender;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Message message = (Message) o;
-        return Objects.equals(id, message.id) && Objects.equals(text, message.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, text);
-    }
 }

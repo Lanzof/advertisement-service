@@ -1,5 +1,6 @@
 package com.pokotilov.finaltask.util;
 
+import com.pokotilov.finaltask.dto.advert.SortField;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.User;
 import jakarta.persistence.criteria.*;
@@ -20,7 +21,7 @@ public class Spec implements Specification<Advert> {
     private Double maxPrice;
     private Double minPrice;
     private Float rating;
-    private String sortField;
+    private SortField sortFieldInput;
     private String sortDirection;
 
     @Override
@@ -32,6 +33,7 @@ public class Spec implements Specification<Advert> {
         Predicate maxPricePred = Optional.ofNullable(maxPrice).map(s -> cb.lessThanOrEqualTo(root.get("price"), maxPrice)).orElse(null);
         Predicate minPricePred = Optional.ofNullable(minPrice).map(s -> cb.greaterThanOrEqualTo(root.get("price"), minPrice)).orElse(null);
         Predicate ratingPred = Optional.ofNullable(rating).map(s -> cb.greaterThanOrEqualTo(userJoin.get("rating"), rating)).orElse(null);
+        Predicate ban = cb.equal(root.get("ban"), false);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -39,6 +41,9 @@ public class Spec implements Specification<Advert> {
         Optional.ofNullable(maxPricePred).ifPresent(predicates::add);
         Optional.ofNullable(minPricePred).ifPresent(predicates::add);
         Optional.ofNullable(ratingPred).ifPresent(predicates::add);
+        predicates.add(ban);
+
+        String sortField = Optional.ofNullable(sortFieldInput).map(Enum::name).orElse(null);
 
         if (sortField == null) {
             sortField = "rating";

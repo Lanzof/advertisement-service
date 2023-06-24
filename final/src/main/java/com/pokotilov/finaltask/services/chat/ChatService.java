@@ -7,11 +7,11 @@ import org.springframework.data.domain.Page;
 import java.security.Principal;
 
 public interface ChatService {
-    Long getChat(Long advertId, Long userId, Principal principal);
+    ChatDto getChat(Long advertId, Long userId, Principal principal);
 
-    String sendMessage(Long chatId, String text, Principal principal);
+    MessageDto sendMessage(Long chatId, String text, Principal principal);
 
     Page<ChatDto> getChats(Integer pageNo, Integer pageSize, Principal principal);
 
-    Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId);
+    Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId, Principal principal);
 }

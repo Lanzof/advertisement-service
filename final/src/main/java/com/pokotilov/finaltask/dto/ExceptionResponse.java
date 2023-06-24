@@ -1,6 +1,7 @@
 package com.pokotilov.finaltask.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 public class ExceptionResponse {
     private final HttpStatus status;
     private String message;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, String> map;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime time = LocalDateTime.now();

@@ -1,15 +1,18 @@
 package com.pokotilov.finaltask.services.advert;
 
+import com.pokotilov.finaltask.aop.LogExecution;
+import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.InputFindRequest;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
-import com.pokotilov.finaltask.entities.Advert;
-import com.pokotilov.finaltask.entities.Role;
-import com.pokotilov.finaltask.entities.User;
+import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
 import com.pokotilov.finaltask.mapper.AdvertMapper;
 import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
+import com.pokotilov.finaltask.repositories.VoteRepository;
 import com.pokotilov.finaltask.services.user.UserService;
 import com.pokotilov.finaltask.util.Spec;
 import lombok.RequiredArgsConstructor;
@@ -18,56 +21,55 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@LogExecution
 public class AdvertServiceImpl implements AdvertService {
 
     private final UserService userService;
     private final AdvertRepository advertRepository;
     private final AdvertMapper advertMapper;
     private final CommentMapper commentMapper;
+    private final VoteRepository voteRepository;
 
 
-    public Page<OutputAdvertDto> findAdverts(String title, Double priceMax, Double priceMin, Float rating,
-                                             Integer pageNo, Integer pageSize, String sortField, String sortDirection) {
+    public Page<OutputAdvertDto> findAdverts(InputFindRequest request) {
         Spec spec = Spec.builder()
-                .title(title)
-                .minPrice(priceMin)
-                .maxPrice(priceMax)
-                .rating(rating)
-                .sortField(sortField)
-                .sortDirection(sortDirection)
+                .title(request.getTitle())
+                .minPrice(request.getPriceMin())
+                .maxPrice(request.getPriceMax())
+                .rating(request.getRating())
+                .sortFieldInput(request.getSortField())
+                .sortDirection(request.getSortDirection())
                 .build();
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Pageable pageable = PageRequest.of(request.getPageNo() - 1, request.getPageSize());
         Page<Advert> page = advertRepository.findAll(spec, pageable);
         return page.map(advertMapper::toDto);
     }
 
-    @Override
     public OutputAdvertDto getAdvert(Long advertId) {
 
         Advert advert = getAdvertById(advertId);
         return advertMapper.toDto(advert);
     }
 
-    @Override
-    public OutputAdvertDto createAdvert(InputAdvertDto inputAdvertDto,
-                                        Principal principal) {
+    public OutputAdvertDto createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Advert advert = Advert.builder()
                 .title(inputAdvertDto.getTitle())
                 .description(inputAdvertDto.getDescription())
                 .price(inputAdvertDto.getPrice())
-                .premium(false)
+                .premiumEnd(LocalDate.now().minusDays(1L))
                 .user(user)
                 .ban(false)
                 .build();
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
-    @Override
     public OutputAdvertDto updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
         Advert advert = getAdvertById(advertId);
         User user = userService.getUserByPrincipal(principal);
@@ -78,7 +80,6 @@ public class AdvertServiceImpl implements AdvertService {
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
-    @Override
     public String deleteAdvert(Long advertId, Principal principal) {
         Advert advert = getAdvertById(advertId);
         User user = userService.getUserByPrincipal(principal);
@@ -89,14 +90,33 @@ public class AdvertServiceImpl implements AdvertService {
         return "Successful deleted";
     }
 
-    @Override
     public OutputAdvertDto banAdvert(Long id) {
         Advert advert = getAdvertById(id);
         advert.setBan(true);
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
-    @Override
+    public String voteAdvert(VoteDto voteDto, Principal principal) {
+        Advert advert = getAdvertById(voteDto.getAdvertId());
+        User user = advert.getUser();
+        User author = userService.getUserByPrincipal(principal);
+        if (user.getId().equals(author.getId())) {
+            throw new UnprocessableEntityException("You can't vote for yourself");
+        }
+        Vote vote = Vote.builder()
+                .voteID(VoteID.builder()
+                        .authorId(author.getId())
+                        .advertId(advert.getId())
+                        .build())
+                .date(LocalDateTime.now())
+                .vote(voteDto.getVote())
+                .author(author)
+                .advert(advert)
+                .build();
+        voteRepository.save(vote);
+        return "Successful vote";
+    }
+
     public List<OutputCommentDto> getAdvertComments(Long advertId) {
         Advert advert = getAdvertById(advertId);
         return advert.getComments().stream()

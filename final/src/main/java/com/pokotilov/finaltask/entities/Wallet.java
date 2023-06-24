@@ -22,7 +22,7 @@ public class Wallet {
     private User user;
     @Column(columnDefinition = "double precision default 0")
     private Double balance;
-    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("date DESC")
     private List<Transaction> transactionsHistory = new ArrayList<>();
 }

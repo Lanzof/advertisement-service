@@ -10,6 +10,6 @@ public interface MessageMapper {
     @Mapping(target = "chatId",
             expression = "java(message.getChat().getId())")
     @Mapping(target = "senderName",
-            expression = "java(message.getSender().getFirstName() + message.getSender().getLastName())")
+            expression = "java(message.getSender().getFirstName() + ' ' + message.getSender().getLastName())")
     MessageDto toDto(Message message);
 }

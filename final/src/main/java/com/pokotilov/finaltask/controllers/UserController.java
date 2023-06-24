@@ -1,18 +1,23 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.services.user.UserService;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -22,38 +27,36 @@ import java.security.Principal;
 @RequiredArgsConstructor
 @Tag(name = "Пользователи", description = "Методы для взаимодействия с пользователями.")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping
-    public Page<UserDto> getAllUsers(@ParameterObject Pageable pageable) {
-        return userService.getAllUsers(pageable);
+    public Page<UserDto> getAllUsers(
+            @Schema(description = "№ страницы. (1..N)", required = true, type = "integer", defaultValue = "1") @NotNull @Positive Integer pageNo,
+            @Schema(description = "Размер страницы.", required = true, minimum = "1", type = "integer", defaultValue = "10") @NotNull @Positive Integer pageSize) {
+        return userService.getAllUsers(pageNo, pageSize);
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUser(@PathVariable("userId") Long userId) {
+    public UserDto getUser(@PathVariable("userId") @Positive Long userId) {
         return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable("userId") Long userId, Principal principal) {
+    public ResponseEntity<String> deleteUser(@PathVariable("userId") @Positive Long userId, Principal principal) {
         return ResponseEntity.ok().body(userService.deleteUser(userId, principal));
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<String> updateUser(@PathVariable("userId") Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable("userId") @Positive Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
         return ResponseEntity.ok().body(userService.updateUser(id, user, principal));
     }
 
-    @PutMapping("/block")
+    @PostMapping("/{userId}/ban")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> banUser(@RequestBody Long id) {
+    public ResponseEntity<String> banUser(@PathVariable("userId") @Positive Long id) {
         return ResponseEntity.ok().body(userService.banUser(id));
-    }
-
-    @PostMapping("/vote")
-    public ResponseEntity<String> voteUser(@Valid @RequestBody VoteDto voteDto, Principal principal) {
-        return ResponseEntity.ok().body(userService.voteUser(voteDto, principal));
     }
 }

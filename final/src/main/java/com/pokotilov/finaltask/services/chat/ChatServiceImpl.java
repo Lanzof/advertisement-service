@@ -1,19 +1,18 @@
 package com.pokotilov.finaltask.services.chat;
 
+import com.pokotilov.finaltask.aop.LogExecution;
 import com.pokotilov.finaltask.dto.ChatDto;
 import com.pokotilov.finaltask.dto.MessageDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Chat;
 import com.pokotilov.finaltask.entities.Message;
 import com.pokotilov.finaltask.entities.User;
-import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
 import com.pokotilov.finaltask.mapper.ChatMapper;
 import com.pokotilov.finaltask.mapper.MessageMapper;
-import com.pokotilov.finaltask.repositories.AdvertRepository;
 import com.pokotilov.finaltask.repositories.ChatRepository;
 import com.pokotilov.finaltask.repositories.MessageRepository;
-import com.pokotilov.finaltask.repositories.UserRepository;
 import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,7 @@ import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
+@LogExecution
 public class ChatServiceImpl implements ChatService {
 
     private final AdvertService advertService;
@@ -37,7 +37,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageMapper messageMapper;
 
     @Override
-    public Long getChat(Long advertId, Long userId, Principal principal) {
+    public ChatDto getChat(Long advertId, Long userId, Principal principal) {
         User principalUser =  userService.getUserByPrincipal(principal);
         Advert advert = advertService.getAdvertById(advertId);
         if (userId == null) {
@@ -50,7 +50,7 @@ public class ChatServiceImpl implements ChatService {
         return getChat(advert, buyer);
     }
 
-    private Long getChat(Advert advert, User user) {
+    private ChatDto getChat(Advert advert, User user) {
         if (user.getId().equals(advert.getUser().getId())) {
             throw new UnprocessableEntityException("You can't chat with yourself.");
         }
@@ -60,15 +60,16 @@ public class ChatServiceImpl implements ChatService {
                     .advert(advert)
                     .buyer(user)
                     .build();
-            chatRepository.save(chat);
+            chat = chatRepository.save(chat);
+        } else {
+            chat = chatRepository.findChatByAdvert_IdAndBuyer_Id(advert.getId(), user.getId()).orElseThrow();
         }
-        chat = chatRepository.findChatByAdvert_IdAndBuyer_Id(advert.getId(), user.getId()).orElseThrow();
-        return chat.getId();
+        return chatMapper.toDto(chat);
     }
 
     @Override
-    public String sendMessage(Long chatId, String text, Principal principal) {
-        Chat chat = chatRepository.getReferenceById(chatId);
+    public MessageDto sendMessage(Long chatId, String text, Principal principal) {
+        Chat chat = getChatById(chatId);
         User user = userService.getUserByPrincipal(principal);
         if (!chat.getBuyer().getId().equals(user.getId()) && !chat.getAdvert().getUser().getId().equals(user.getId())) {
             throw new UnprocessableEntityException("It's not your chat");
@@ -78,8 +79,7 @@ public class ChatServiceImpl implements ChatService {
                 .text(text)
                 .sender(user)
                 .build();
-        messageRepository.save(message);
-        return "Successful send";
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Override
@@ -91,10 +91,19 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId) {
-        Sort sort = Sort.by("date").ascending();
+    public Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId, Principal principal) {
+        User user = userService.getUserByPrincipal(principal);
+        Chat chat = getChatById(chatId);
+        if (!chat.getBuyer().getId().equals(user.getId()) && !chat.getAdvert().getUser().getId().equals(user.getId())) {
+            throw new UnprocessableEntityException("It's not your chat");
+        }
+        Sort sort = Sort.by("date").descending();
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Message> page = messageRepository.findAllByChat_Id(chatId, pageable);
         return page.map(messageMapper::toDto);
+    }
+
+    private Chat getChatById(Long chatId) {
+        return chatRepository.findById(chatId).orElseThrow(() -> new NotFoundException("Chat not found"));
     }
 }

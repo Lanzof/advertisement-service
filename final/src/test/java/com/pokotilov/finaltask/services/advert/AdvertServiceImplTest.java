@@ -1,26 +1,32 @@
 package com.pokotilov.finaltask.services.advert;
 
+import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.InputFindRequest;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
-import com.pokotilov.finaltask.entities.Advert;
-import com.pokotilov.finaltask.entities.Comment;
-import com.pokotilov.finaltask.entities.Role;
-import com.pokotilov.finaltask.entities.User;
+import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.exceptions.UnprocessableEntityException;
 import com.pokotilov.finaltask.mapper.AdvertMapper;
 import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.AdvertRepository;
+import com.pokotilov.finaltask.repositories.VoteRepository;
 import com.pokotilov.finaltask.services.user.UserService;
+import com.pokotilov.finaltask.util.Spec;
 import com.sun.security.auth.UserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,25 +42,55 @@ class AdvertServiceImplTest {
     private AdvertRepository advertRepository;
     @Mock
     private AdvertMapper advertMapper;
-
     @Mock
     private CommentMapper commentMapper;
-
+    @Mock
+    private VoteRepository voteRepository;
     @InjectMocks
     private AdvertServiceImpl advertService;
+
+    Long advertId = 1L;
+    Principal principal = new UserPrincipal("test@example.com");
 
 
 
     @Test
-    void findAdverts() {
+    void findAdverts_returnPage() {
         // Arrange
+        InputFindRequest request = new InputFindRequest();
+        request.setTitle("Test Advert");
+        request.setPriceMin(10.0);
+        request.setPriceMax(100.0);
+        request.setRating(4.0f);
+        request.setSortField("title");
+        request.setSortDirection("ASC");
+        request.setPageNo(1);
+        request.setPageSize(10);
 
+        List<Advert> adverts = new ArrayList<>();
+        adverts.add(Advert.builder().id(1L).title("Test Advert 1").price(50.0).build());
+        adverts.add(Advert.builder().id(1L).title("Test Advert 2").price(20.0).build());
+        adverts.add(Advert.builder().id(1L).title("Test Advert 3").price(80.0).build());
+
+        Page<Advert> page = new PageImpl<>(adverts);
+
+        when(advertRepository.findAll(any(Spec.class), any(Pageable.class))).thenReturn(page);
+        when(advertMapper.toDto(any(Advert.class))).thenReturn(new OutputAdvertDto());
+
+        // Act
+        Page<OutputAdvertDto> result = advertService.findAdverts(request);
+
+        // Assert
+        verify(advertRepository).findAll(any(Spec.class), any(Pageable.class));
+        verify(advertMapper, times(adverts.size())).toDto(any(Advert.class));
+
+        assertEquals(adverts.size(), result.getContent().size());
     }
 
     @Test
     void getAdvert_shouldGetExistingAdvert() {
         // Arrange
-        Long advertId = 1L;
+
         when(advertRepository.findById(advertId))
                 .thenAnswer(invocation -> Optional.of(Advert.builder().id(invocation.getArgument(0)).build()));
         when(advertMapper.toDto(any(Advert.class)))
@@ -74,13 +110,13 @@ class AdvertServiceImplTest {
 
     @Test
     void createAdvert_returnCreatedAdvert() {
-        //a
+        // Arrange
         InputAdvertDto inputAdvertDto = InputAdvertDto.builder()
                 .title("Test Advert")
                 .description("Test Advert Description")
                 .price(1000.0)
                 .build();
-        Principal principal = new UserPrincipal("test@example.com");
+
         when(userService.getUserByPrincipal(principal))
                 .thenAnswer(invocation -> User.builder().id(1L).build());
         when(advertRepository.save(any(Advert.class)))
@@ -96,9 +132,9 @@ class AdvertServiceImplTest {
                             .build();
                 });
 
-        //a
+        // Act
         OutputAdvertDto result = advertService.createAdvert(inputAdvertDto, principal);
-        //a
+        // Assert
         assertNotNull(result);
         assertEquals("Test Advert", result.getTitle());
         assertEquals("Test Advert Description", result.getDescription());
@@ -109,14 +145,12 @@ class AdvertServiceImplTest {
 
     @Test
     void updateAdvert_userAuthor_returnUpdated() {
-        //a
-        Long advertId = 1L;
+        // Arrange
         InputAdvertDto inputAdvertDto = InputAdvertDto.builder()
                 .title("Test Advert")
                 .description("Test Advert Description")
                 .price(1000.0)
                 .build();
-        Principal principal = new UserPrincipal("test@example.com");
         User user = User.builder()
                 .id(1L)
                 .role(Role.USER)
@@ -159,22 +193,20 @@ class AdvertServiceImplTest {
                 .description(inputAdvertDto.getDescription())
                 .price(inputAdvertDto.getPrice())
                 .build();
-        //a
+        // Act
         OutputAdvertDto result = advertService.updateAdvert(advertId, inputAdvertDto, principal);
-        //a
+        // Assert
         assertEquals(expected, result);
     }
 
     @Test
     void updateAdvert_byAdmin_returnUpdated() {
-        //a
-        Long advertId = 1L;
+        // Arrange
         InputAdvertDto inputAdvertDto = InputAdvertDto.builder()
                 .title("Test Advert")
                 .description("Test Advert Description")
                 .price(1000.0)
                 .build();
-        Principal principal = new UserPrincipal("test@example.com");
         User user = User.builder()
                 .id(1L)
                 .role(Role.ADMIN)
@@ -183,6 +215,7 @@ class AdvertServiceImplTest {
                 .id(advertId)
                 .user(User.builder().id(2L).build())
                 .build();
+
         when(advertRepository.findById(advertId))
                 .thenReturn(Optional.of(advert));
         when(advertRepository.save(any(Advert.class)))
@@ -217,15 +250,15 @@ class AdvertServiceImplTest {
                 .description(inputAdvertDto.getDescription())
                 .price(inputAdvertDto.getPrice())
                 .build();
-        //a
+        // Act
         OutputAdvertDto result = advertService.updateAdvert(advertId, inputAdvertDto, principal);
-        //a
+        // Assert
         assertEquals(expected, result);
     }
 
     @Test
     void updateAdvert_byNotAuthor_shouldThrow() {
-        //a
+        // Arrange
         Long advertId = 1L;
         InputAdvertDto inputAdvertDto = InputAdvertDto.builder()
                 .title("Test Advert")
@@ -246,13 +279,13 @@ class AdvertServiceImplTest {
 
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(user);
-        //a
+        // Act & Assert
         assertThrows(AccessDeniedException.class, () -> advertService.updateAdvert(advertId, inputAdvertDto, principal));
     }
 
     @Test
     void deleteAdvert_byUserAuthor_shouldDelete() {
-        //a
+        // Arrange
         Long advertId = 1L;
         Principal principal = new UserPrincipal("test@example.com");
         User user = User.builder()
@@ -267,17 +300,16 @@ class AdvertServiceImplTest {
                 .thenReturn(user);
         when(advertRepository.findById(advertId))
                 .thenReturn(Optional.of(advert));
-        //a
+        // Act
         String result = advertService.deleteAdvert(advertId, principal);
-        //a
+        // Assert
         assertEquals("Successful deleted", result);
+        verify(advertRepository).deleteById(advertId);
     }
 
     @Test
     void deleteAdvert_byAdmin_shouldDelete() {
-        //a
-        Long advertId = 1L;
-        Principal principal = new UserPrincipal("test@example.com");
+        // Arrange
         User user = User.builder()
                 .id(2L)
                 .role(Role.ADMIN)
@@ -290,17 +322,16 @@ class AdvertServiceImplTest {
                 .thenReturn(user);
         when(advertRepository.findById(advertId))
                 .thenReturn(Optional.of(advert));
-        //a
+        // Act
         String result = advertService.deleteAdvert(advertId, principal);
-        //a
+        // Assert
         assertEquals("Successful deleted", result);
+        verify(advertRepository).deleteById(advertId);
     }
 
     @Test
     void deleteAdvert_byUserNotAuthor_shouldThrow() {
-        //a
-        Long advertId = 1L;
-        Principal principal = new UserPrincipal("test@example.com");
+        // Arrange
         User user = User.builder()
                 .id(2L)
                 .role(Role.USER)
@@ -313,13 +344,13 @@ class AdvertServiceImplTest {
                 .thenReturn(user);
         when(advertRepository.findById(advertId))
                 .thenReturn(Optional.of(advert));
-        //a
+        // Act & Assert
         assertThrows(AccessDeniedException.class, () -> advertService.deleteAdvert(advertId, principal));
     }
 
     @Test
     void banAdvert_returnBannedDto() {
-        //a
+        // Arrange
         Long advertId = 1L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -337,15 +368,63 @@ class AdvertServiceImplTest {
                             .ban(advertInput.getBan())
                             .build();
                 });
-        //a
+        // Act
         OutputAdvertDto result = advertService.banAdvert(advertId);
-        //a
+        // Assert
         assertTrue(result.getBan());
     }
 
     @Test
+    void voteAdvert_byNotAdvertAuthor_return() {
+        // Arrange
+        VoteDto voteDto = VoteDto.builder()
+                .vote(3)
+                .advertId(advertId)
+                .build();
+        User user = User.builder()
+                .id(2L)
+                .build();
+        Advert advert = Advert.builder()
+                .id(advertId)
+                .user(User.builder().id(1L).build())
+                .build();
+        when(advertRepository.findById(advertId))
+                .thenReturn(Optional.of(advert));
+        when(userService.getUserByPrincipal(principal))
+                .thenReturn(user);
+        when(voteRepository.save(any(Vote.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        // Act
+        String result = advertService.voteAdvert(voteDto, principal);
+        // Assert
+        assertEquals("Successful vote", result);
+    }
+
+    @Test
+    void voteAdvert_byAdvertAuthor_throw() {
+        // Arrange
+        VoteDto voteDto = VoteDto.builder()
+                .vote(3)
+                .advertId(advertId)
+                .build();
+        User user = User.builder()
+                .id(2L)
+                .build();
+        Advert advert = Advert.builder()
+                .id(advertId)
+                .user(user)
+                .build();
+        when(advertRepository.findById(advertId))
+                .thenReturn(Optional.of(advert));
+        when(userService.getUserByPrincipal(principal))
+                .thenReturn(user);
+        // Act
+        assertThrows(UnprocessableEntityException.class, () -> advertService.voteAdvert(voteDto, principal));
+    }
+
+    @Test
     void getAdvertComments_validAdvertId_returnCommentList() {
-        //a
+        // Arrange
         Comment first = Comment.builder()
                 .id(3L)
                 .ban(false)
@@ -354,7 +433,6 @@ class AdvertServiceImplTest {
                 .id(2L)
                 .ban(true)
                 .build();
-        Long advertId = 1L;
         Advert advert = Advert.builder()
                 .id(advertId)
                 .comments(List.of(first, second))
@@ -373,9 +451,9 @@ class AdvertServiceImplTest {
                             .ban(comment.getBan())
                             .build();
                 });
-        //a
+        // Act
         List<OutputCommentDto> output = advertService.getAdvertComments(advertId);
-        //a
+        // Assert
         assertEquals(1, output.size());
         assertEquals(expected, output.get(0));
 
@@ -383,21 +461,24 @@ class AdvertServiceImplTest {
 
     @Test
     void getAdvertById_validAdvertId_returnAdvert() {
-        Long advertId = 1L;
+        // Arrange
         when(advertRepository.findById(advertId))
-                .thenAnswer(invocation -> Optional.of(Advert.builder().id(invocation.getArgument(0)).build()));
-
+                .thenReturn(Optional.of(Advert.builder()
+                        .id(advertId)
+                        .build())
+                );
+        // Act
         Advert result = advertService.getAdvertById(advertId);
-
+        // Assert
         assertEquals(advertId, result.getId());
     }
 
     @Test
     void getAdvertById_invalidAdvertId_shouldThrow() {
-        Long advertId = 1L;
+        // Arrange
         when(advertRepository.findById(advertId))
                 .thenReturn(Optional.empty());
-
+        // Act & Assert
         assertThrows(NotFoundException.class, () -> advertService.getAdvertById(advertId));
     }
 }

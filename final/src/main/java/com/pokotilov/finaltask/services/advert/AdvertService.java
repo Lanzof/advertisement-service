@@ -1,6 +1,8 @@
 package com.pokotilov.finaltask.services.advert;
 
+import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.InputFindRequest;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
@@ -23,7 +25,9 @@ public interface AdvertService {
 
     List<OutputCommentDto> getAdvertComments(Long advertId);
 
-    Page<OutputAdvertDto> findAdverts(String title, Double priceMax, Double priceMin, Float rating, Integer pageNo, Integer pageSize, String sortField, String sortDirection);
-
     Advert getAdvertById(Long advertId);
+
+    Page<OutputAdvertDto> findAdverts(InputFindRequest request);
+
+    String voteAdvert(VoteDto voteDto, Principal principal);
 }
