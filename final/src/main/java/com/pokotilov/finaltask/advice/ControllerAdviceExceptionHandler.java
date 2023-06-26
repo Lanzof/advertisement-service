@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,13 @@ public class ControllerAdviceExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public final ExceptionResponse handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.error(ex.getMessage(), ex);
+        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public final ExceptionResponse handleUnprocessableEntityExceptions(UnprocessableEntityException ex) {
         log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
@@ -70,13 +78,6 @@ public class ControllerAdviceExceptionHandler {
         log.error(ex.getMessage(), ex);
         return new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
-
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ExceptionResponse handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-//        log.error(ex.getMessage(), ex);
-//        return new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-//    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNAUTHORIZED)

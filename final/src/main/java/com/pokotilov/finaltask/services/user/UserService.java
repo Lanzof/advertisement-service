@@ -4,7 +4,6 @@ import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.entities.User;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.security.Principal;
 

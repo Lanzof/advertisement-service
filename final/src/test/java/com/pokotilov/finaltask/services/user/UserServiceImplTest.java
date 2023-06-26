@@ -1,7 +1,5 @@
 package com.pokotilov.finaltask.services.user;
 
-import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
-import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.dto.user.UpdateUserRequest;
 import com.pokotilov.finaltask.dto.user.UserDto;
 import com.pokotilov.finaltask.entities.Advert;

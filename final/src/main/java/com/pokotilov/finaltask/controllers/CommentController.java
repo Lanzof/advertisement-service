@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,6 @@ public class CommentController {
     private final AdvertService advertService;
 
     @PostMapping("/{advertId}/comments")
-    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public OutputCommentDto createComment(@Valid @RequestBody InputCommentDto comment, Principal principal) {
         return commentService.createComment(comment, principal);
     }
@@ -38,8 +38,7 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}/ban")
-    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @Secured({ "ROLE_ADMIN" })
     public OutputCommentDto banComment(@PathVariable("commentId") Long id) {
         return commentService.banComment(id);
     }

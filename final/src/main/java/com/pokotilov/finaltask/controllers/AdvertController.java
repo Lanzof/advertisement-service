@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,14 +49,12 @@ public class AdvertController {
 
     @PostMapping
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public OutputAdvertDto createAdvert(@Valid @RequestBody InputAdvertDto advert, Principal principal) {
         return advertService.createAdvert(advert, principal);
     }
 
     @DeleteMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> deleteAdvert(
             @PathVariable("advertId") @Positive Long advertId, Principal principal) {
         return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal));
@@ -63,7 +62,6 @@ public class AdvertController {
 
     @PutMapping("/{advertId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public OutputAdvertDto updateAdvert(
             @PathVariable("advertId") @Positive Long advertId,
             @Valid @RequestBody InputAdvertDto advert, Principal principal) {
@@ -72,7 +70,6 @@ public class AdvertController {
 
     @PostMapping("/{advertId}/vote")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> voteUser(@Parameter(description = "Id объявления.") @PathVariable("advertId") @Positive Long id,
                                            @RequestParam Integer vote , Principal principal) {
         VoteDto voteDto = new VoteDto(vote, id);
@@ -85,7 +82,6 @@ public class AdvertController {
 
     @PostMapping("/{advertId}/buy")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> buyAdvert(
             @Parameter(description = "Id объявления.", required = true) @PathVariable("advertId") @Positive Long advertId,
             Principal principal) {
@@ -94,14 +90,12 @@ public class AdvertController {
 
     @GetMapping("/services")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public List<PremiumService> showServices(){
         return walletService.showServices();
     }
 
     @PostMapping("/{advertId}/services/{serviceId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("isAuthenticated()")
     public OutputAdvertDto buyService(
             @Parameter(description = "Id сервиса.", required = true) @PathVariable("serviceId") @Positive Long serviceId,
             @Parameter(description = "Id объявления.", required = true) @PathVariable("advertId") @Positive Long advertId,
@@ -111,7 +105,7 @@ public class AdvertController {
 
     @PutMapping("/{advertId}/ban")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @Secured({ "ROLE_ADMIN" })
     public OutputAdvertDto banAdvert(
             @Parameter(description = "Id объявления.") @PathVariable("advertId") @Positive Long id) {
         return advertService.banAdvert(id);
