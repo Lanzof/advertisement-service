@@ -26,7 +26,7 @@ import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
-@LogExecution
+
 public class ChatServiceImpl implements ChatService {
 
     private final AdvertService advertService;
@@ -37,6 +37,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageMapper messageMapper;
 
     @Override
+    @LogExecution
     public ChatDto getChat(Long advertId, Long userId, Principal principal) {
         User principalUser =  userService.getUserByPrincipal(principal);
         Advert advert = advertService.getAdvertById(advertId);
@@ -68,6 +69,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @LogExecution
     public MessageDto sendMessage(Long chatId, String text, Principal principal) {
         Chat chat = getChatById(chatId);
         User user = userService.getUserByPrincipal(principal);
@@ -83,6 +85,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @LogExecution
     public Page<ChatDto> getChats(Integer pageNo, Integer pageSize, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
@@ -91,6 +94,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @LogExecution
     public Page<MessageDto> getChatMessages(Integer pageNo, Integer pageSize, Long chatId, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Chat chat = getChatById(chatId);

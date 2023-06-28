@@ -4,8 +4,6 @@ import com.pokotilov.finaltask.dto.user.AuthUserRequest;
 import com.pokotilov.finaltask.dto.user.RegisterUserRequest;
 import com.pokotilov.finaltask.services.auth.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +28,5 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@Valid @RequestBody RegisterUserRequest request) {
         return ResponseEntity.ok().body(authenticationService.register(request));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
-        authenticationService.logout(request, response);
-        return ResponseEntity.ok().body("Logout success");
     }
 }

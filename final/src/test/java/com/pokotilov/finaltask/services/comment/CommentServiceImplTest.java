@@ -1,14 +1,17 @@
 package com.pokotilov.finaltask.services.comment;
 
 import com.pokotilov.finaltask.dto.comments.InputCommentDto;
+import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.Advert;
 import com.pokotilov.finaltask.entities.Comment;
 import com.pokotilov.finaltask.entities.User;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.mapper.CommentMapper;
 import com.pokotilov.finaltask.repositories.CommentRepository;
 import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.user.UserService;
 import com.sun.security.auth.UserPrincipal;
+import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,12 +35,14 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private CommentMapper commentMapper;
 
     @InjectMocks
     private CommentServiceImpl commentService;
 
     @Test
-    void createComment_validParams_returnSuccess() {
+    void createComment_validParams_returnSavedComment() {
         // arrange
         Long advertId = 1L;
         String text = "Test comment";
@@ -61,14 +66,21 @@ class CommentServiceImplTest {
                 .text(text)
                 .ban(false)
                 .build();
-        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentRepository.save(any(Comment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(commentMapper.toDto(any(Comment.class))).thenAnswer(invocation -> {
+            Comment com = invocation.getArgument(0);
+            return OutputCommentDto.builder()
+                    .text(com.getText())
+                    .ban(com.getBan())
+                    .build();
+        });
 
         // act
-        String result = commentService.createComment(inputCommentDto, principal);
+        OutputCommentDto result = commentService.createComment(inputCommentDto, principal);
 
         // assert
-        assertEquals("Successful add", result);
-        verify(commentRepository, times(1)).save(comment);
+        assertEquals(inputCommentDto.getText(), result.getText());
     }
 
     @Test
@@ -83,7 +95,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void banComment_ExistingComment_returnSuccess() {
+    void banComment_ExistingComment_returnBannedComment() {
         // arrange
         Long commentId = 1L;
         Comment comment = Comment.builder()
@@ -92,13 +104,18 @@ class CommentServiceImplTest {
                 .build();
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentMapper.toDto(comment)).thenAnswer(invocation -> {
+            Comment com = invocation.getArgument(0);
+            return OutputCommentDto.builder()
+                    .ban(com.getBan())
+                    .build();
+        });
 
         // act
-        String result = commentService.banComment(commentId);
+        OutputCommentDto result = commentService.banComment(commentId);
 
         // assert
-        assertEquals("Successful block", result);
-        assertTrue(comment.getBan());
+        assertTrue(result.getBan());
         verify(commentRepository, times(1)).save(comment);
     }
 }

@@ -7,11 +7,10 @@ services:
       - "8080:8080"
     container_name: adverts
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/Final-task
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/Final-task
     depends_on:
-      - postgres
-#      postgres:
-#        condition: service_healthy
+      postgres:
+        condition: service_healthy
   postgres:
     image: postgres:15.2-alpine
     restart: always
@@ -19,12 +18,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Cka4at
       POSTGRES_DB: Final-task
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: postgres
     volumes:
-      - db-data:/var/lib/postgresql/data
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    ports:
-#      - "5432:5432"
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

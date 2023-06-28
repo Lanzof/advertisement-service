@@ -1,11 +1,16 @@
 package com.pokotilov.finaltask.services.wallet;
 
+import com.pokotilov.finaltask.dto.TransactionDto;
 import com.pokotilov.finaltask.dto.WalletDto;
+import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
 import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.BadRequestException;
 import com.pokotilov.finaltask.exceptions.ConflictException;
 import com.pokotilov.finaltask.exceptions.ExpectationFailedException;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
+import com.pokotilov.finaltask.mapper.AdvertMapper;
+import com.pokotilov.finaltask.mapper.TransactionMapper;
+import com.pokotilov.finaltask.mapper.WalletMapper;
 import com.pokotilov.finaltask.repositories.ServiceRepository;
 import com.pokotilov.finaltask.repositories.TransactionRepository;
 import com.pokotilov.finaltask.repositories.WalletRepository;
@@ -41,11 +46,17 @@ class WalletServiceImplTest {
     private TransactionRepository transactionRepository;
     @Mock
     private ServiceRepository serviceRepository;
+    @Mock
+    private WalletMapper walletMapper;
+    @Mock
+    private AdvertMapper advertMapper;
+    @Mock
+    private TransactionMapper transactionMapper;
     @InjectMocks
     WalletServiceImpl walletService;
 
     @Test
-    void createWallet_walletDoesntExist_returnSuccess() {
+    void createWallet_walletDoesntExist_returnWallet() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -60,15 +71,21 @@ class WalletServiceImplTest {
                     wallet.setId(2L);
                     return wallet;
                 });
-        ArgumentCaptor<Wallet> savedWallet = ArgumentCaptor.forClass(Wallet.class);
+        when(walletMapper.toDto(any(Wallet.class)))
+                .thenAnswer(invocation -> {
+                    Wallet wallet = invocation.getArgument(0);
+                    return WalletDto.builder()
+                            .balance(wallet.getBalance())
+                            .userId(wallet.getUser().getId())
+                            .build();
+                });
 
         // Act
         WalletDto output = walletService.createWallet(principal);
 
         // Assert
-        verify(walletRepository).save(savedWallet.capture());
-        assertEquals(2L, savedWallet.getValue().getId());
-        assertEquals("Wallet created", output);
+        assertEquals(0.00, output.getBalance());
+        assertEquals(1L, output.getUserId());
     }
 
     @Test
@@ -90,7 +107,7 @@ class WalletServiceImplTest {
     }
 
     @Test
-    void getWallet_walletExist_returnBalance() {
+    void getWallet_walletExist_returnWalletDto() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -100,12 +117,19 @@ class WalletServiceImplTest {
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletMapper.toDto(any(Wallet.class)))
+                .thenAnswer(invocation -> {
+                    Wallet wallet = invocation.getArgument(0);
+                    return WalletDto.builder()
+                            .balance(wallet.getBalance())
+                            .build();
+                });
 
         // Act
-        String output = walletService.getWallet(principal);
+        WalletDto output = walletService.getWallet(principal);
 
         // Assert
-        assertEquals(Double.toString(1500.00), output);
+        assertEquals(1500.00, output.getBalance());
     }
 
     @Test
@@ -121,7 +145,7 @@ class WalletServiceImplTest {
                 .thenReturn(principalUser);
 
         // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> walletService.getWallet(principal), "Wallet does not exist");
+        assertThrows(NotFoundException.class, () -> walletService.getWallet(principal), "Wallet does not exist");
     }
 
     @Test
@@ -146,7 +170,7 @@ class WalletServiceImplTest {
                 .thenReturn(advert);
         ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
         Transaction expectedTransaction = Transaction.builder()
-                .description(String.format("Advert id: %d, title: %s", advertId, advert.getTitle()))
+                .description(String.format("Advert id: %d, title: %s has been bought.", advertId, advert.getTitle()))
                 .operation(Operation.DECREASE)
                 .sum(advert.getPrice())
                 .wallet(principalUser.getWallet())
@@ -158,7 +182,7 @@ class WalletServiceImplTest {
         // Assert
         verify(transactionRepository).save(savedTransaction.capture());
         assertEquals("Successful transaction", output);
-        assertEquals(expectedTransaction, savedTransaction.getValue());
+        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
     }
 
     @Test
@@ -214,7 +238,7 @@ class WalletServiceImplTest {
     }
 
     @Test
-    void buyService_validAdvertAndWalletBalance_returnSuccess() {
+    void buyService_validAdvertAndWalletBalance_returnUpdatedAdvertDto() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -242,19 +266,25 @@ class WalletServiceImplTest {
         when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
         ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
         Transaction expectedTransaction = Transaction.builder()
-                .description(String.format("Service id: %d, description: %s", serviceId, service.getDescription()))
+                .description(String.format("Service id: %d, description: %s, has been bought for advert %d.", serviceId, service.getDescription(), advert.getId()))
                 .operation(Operation.DECREASE)
                 .sum(service.getPrice())
                 .wallet(principalUser.getWallet())
                 .build();
+        when(advertMapper.toDto(any(Advert.class))).thenAnswer(invocation -> {
+            Advert ad = invocation.getArgument(0);
+            return OutputAdvertDto.builder()
+                    .premium(ad.getPremium())
+                    .build();
+        });
 
         // Act
-        String output = walletService.buyService(principal, serviceId, advertId);
+        OutputAdvertDto output = walletService.buyService(principal, serviceId, advertId);
 
         // Assert
         verify(transactionRepository).save(savedTransaction.capture());
-        assertEquals("Successful transaction", output);
-        assertEquals(expectedTransaction, savedTransaction.getValue());
+        assertTrue(output.getPremium());
+        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
         assertEquals(LocalDate.now(), advert.getPremiumStart());
         assertEquals(LocalDate.now().plusDays(service.getDuration()), advert.getPremiumEnd());
         assertEquals(1000.00, principalUser.getWallet().getBalance());
@@ -421,29 +451,37 @@ class WalletServiceImplTest {
         when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
         Transaction expectedTransaction = Transaction.builder()
-                .description(String.format("User id: %d add %f to wallet, total: %f ", principalUser.getId(), amount, principalUser.getWallet().getBalance()))
+                .description(String.format("User id: %d add %f to wallet, total: %f ", principalUser.getId(), amount, 2000.00))
                 .operation(Operation.INCREASE)
                 .sum(amount)
                 .wallet(principalUser.getWallet())
                 .build();
+        when(walletMapper.toDto(any(Wallet.class)))
+                .thenAnswer(invocation -> {
+                    Wallet wallet = invocation.getArgument(0);
+                    return WalletDto.builder()
+                            .balance(wallet.getBalance())
+                            .build();
+                });
 
         // Act
-        Wallet output = walletService.deposit(amount, principal);
+        WalletDto output = walletService.deposit(amount, principal);
 
         // Assert
         verify(transactionRepository).save(savedTransaction.capture());
+        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
         assertEquals(2000.00, output.getBalance());
     }
 
     @Test
-    void showHistory() {
+    void showHistory_authUser_returnTransactionalHistoryDto() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
 
         List<Transaction> list = List.of(
-                Transaction.builder().id(1L).build(),
-                Transaction.builder().id(2L).build(),
-                Transaction.builder().id(3L).build()
+                Transaction.builder().id(1L).description("text1").build(),
+                Transaction.builder().id(2L).description("text2").build(),
+                Transaction.builder().id(3L).description("text3").build()
         );
         Wallet wallet = Wallet.builder()
                 .balance(1500.00)
@@ -456,11 +494,17 @@ class WalletServiceImplTest {
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(transactionMapper.toDto(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction tr = invocation.getArgument(0);
+            return TransactionDto.builder()
+                    .description(tr.getDescription())
+                    .build();
+        });
 
         // Act
-        List<Transaction> output = walletService.showHistory(principal);
+        List<TransactionDto> output = walletService.showHistory(principal);
 
         // Assert
-        assertEquals(list, output);
+        assertEquals(list.get(0).getDescription(), output.get(0).getDescription());
     }
 }

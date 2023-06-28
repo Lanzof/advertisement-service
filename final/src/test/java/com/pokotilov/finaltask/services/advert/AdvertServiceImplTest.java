@@ -4,6 +4,7 @@ import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.InputFindRequest;
 import com.pokotilov.finaltask.dto.advert.OutputAdvertDto;
+import com.pokotilov.finaltask.dto.advert.SortField;
 import com.pokotilov.finaltask.dto.comments.OutputCommentDto;
 import com.pokotilov.finaltask.entities.*;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
@@ -62,7 +63,7 @@ class AdvertServiceImplTest {
         request.setPriceMin(10.0);
         request.setPriceMax(100.0);
         request.setRating(4.0f);
-        request.setSortField("title");
+        request.setSortField(SortField.TITLE);
         request.setSortDirection("ASC");
         request.setPageNo(1);
         request.setPageSize(10);

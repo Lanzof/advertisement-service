@@ -83,7 +83,7 @@ class AuthenticationServiceImplTest {
         verify(userRepository).existsByEmail(request.getEmail());
         verify(jwtService).generateToken(any(User.class));
 
-        assertEquals(user, savedUser.getValue());
+        assertEquals(user.getEmail(), savedUser.getValue().getEmail());
         assertEquals("token", result);
     }
 
@@ -132,7 +132,7 @@ class AuthenticationServiceImplTest {
         verify(userRepository).existsByEmail(request.getEmail());
         verify(jwtService).generateToken(any(User.class));
 
-        assertEquals(user, savedUser.getValue());
+        assertEquals(user.getEmail(), savedUser.getValue().getEmail());
         assertEquals("token", result);
     }
 

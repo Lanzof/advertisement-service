@@ -50,7 +50,7 @@ class ChatServiceImplTest {
     private ChatServiceImpl chatService;
 
     @Test
-    void getChat_whenSellerRequestsChat_ReturnsChatId() {
+    void getChat_whenSellerRequestsChat_ReturnsChatDto() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -76,16 +76,22 @@ class ChatServiceImplTest {
                 .build();
         when(chatRepository.findChatByAdvert_IdAndBuyer_Id(advertId, userId))
                 .thenReturn(Optional.of(chat));
+        when(chatMapper.toDto(any(Chat.class))).thenAnswer(invocation -> {
+            Chat chatI = invocation.getArgument(0);
+            return ChatDto.builder()
+                    .id(chatI.getId())
+                    .build();
+        });
 
         // Act
-        Long result = chatService.getChat(advertId, userId, principal);
+        ChatDto result = chatService.getChat(advertId, userId, principal);
 
         // Assert
-        assertEquals(3L, result);
+        assertEquals(3L, result.getId());
     }
 
     @Test
-    void getChat_whenBuyerRequestsChat_ReturnsChatId() {
+    void getChat_whenBuyerRequestsChat_ReturnsChatDto() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -107,12 +113,18 @@ class ChatServiceImplTest {
                     chat.setId(3L);
                     return chat;
                 });
+        when(chatMapper.toDto(any(Chat.class))).thenAnswer(invocation -> {
+            Chat chat = invocation.getArgument(0);
+            return ChatDto.builder()
+                    .id(chat.getId())
+                    .build();
+        });
 
         // Act
-        Long result = chatService.getChat(advertId, null, principal);
+        ChatDto result = chatService.getChat(advertId, null, principal);
 
         // Assert
-        assertEquals(3L, result);
+        assertEquals(3L, result.getId());
     }
 
     @Test
@@ -157,7 +169,7 @@ class ChatServiceImplTest {
     }
 
     @Test
-    void sendMessage_validAdvertAndUser_returnSuccessfulSend() {
+    void sendMessage_validAdvertAndUser_returnSavedMessageDto() {
         // Arrange
         User principalUser = User.builder()
                 .id(2L)
@@ -174,15 +186,22 @@ class ChatServiceImplTest {
                 .advert(advert)
                 .buyer(principalUser)
                 .build();
-        when(chatRepository.getReferenceById(chatId)).thenReturn(chat);
+        when(chatRepository.findById(chatId)).thenReturn(Optional.of(chat));
         String text = "Hello";
-        when(messageRepository.save(any(Message.class))).thenReturn(null);
+        when(messageRepository.save(any(Message.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(messageMapper.toDto(any(Message.class))).thenAnswer(invocation -> {
+            Message message = invocation.getArgument(0);
+            return MessageDto.builder()
+                    .text(message.getText())
+                    .build();
+        });
 
         // Act
-        String result = chatService.sendMessage(chatId, text, principal);
+        MessageDto result = chatService.sendMessage(chatId, text, principal);
 
         // Assert
-        assertEquals("Successful send", result);
+        assertEquals(text, result.getText());
     }
 
     @Test
@@ -203,7 +222,7 @@ class ChatServiceImplTest {
                 .advert(advert)
                 .buyer(User.builder().id(2L).build())
                 .build();
-        when(chatRepository.getReferenceById(chatId)).thenReturn(chat);
+        when(chatRepository.findById(chatId)).thenReturn(Optional.of(chat));
         String text = "Hello";
 
         // Act & Assert
@@ -212,7 +231,7 @@ class ChatServiceImplTest {
     }
 
     @Test
-    void getChats__ReturnsPageOfMessages() {
+    void getChats_byValidUser_ReturnsPageOfMessages() {
         // Arrange
         int page = 1;
         int size = 10;
@@ -235,7 +254,7 @@ class ChatServiceImplTest {
         });
 
         // Act
-        Page<ChatDto> result = chatService.getChats(, principal);
+        Page<ChatDto> result = chatService.getChats(page, size, principal);
 
         // Assert
         assertEquals(chats.get(0).getId(), result.getContent().get(0).getId());
@@ -243,11 +262,26 @@ class ChatServiceImplTest {
     }
 
     @Test
-    void getChatMessages_validUser_ReturnsPageOfMessages() {
+    void getChatMessages_validUser_returnsPageOfMessages() {
         // Arrange
-        Long chatId = 1L;
         int page = 1;
         int size = 10;
+        User principalUser = User.builder()
+                .id(1L)
+                .build();
+        Principal principal = new UserPrincipal("test@example.com");
+        when(userService.getUserByPrincipal(principal)).thenReturn(principalUser);
+        Advert advert = Advert.builder()
+                .id(1L)
+                .user(User.builder().id(3L).build())
+                .build();
+        Long chatId = 1L;
+        Chat chat = Chat.builder()
+                .id(chatId)
+                .advert(advert)
+                .buyer(principalUser)
+                .build();
+        when(chatRepository.findById(chatId)).thenReturn(Optional.of(chat));
         List<Message> messages = List.of(
                 Message.builder().id(1L).build(),
                 Message.builder().id(2L).build(),
@@ -264,9 +298,35 @@ class ChatServiceImplTest {
         });
 
         // Act
-        Page<MessageDto> result = chatService.getChatMessages(page, size, chatId, );
+        Page<MessageDto> result = chatService.getChatMessages(page, size, chatId, principal);
 
         // Assert
         assertEquals(messages.get(0).getId(), result.getContent().get(0).getId());
+    }
+
+    @Test
+    void getChatMessages_wrongChatId_throwProcessableEntity() {
+        // Arrange
+        int page = 1;
+        int size = 10;
+        User principalUser = User.builder()
+                .id(1L)
+                .build();
+        Principal principal = new UserPrincipal("test@example.com");
+        when(userService.getUserByPrincipal(principal)).thenReturn(principalUser);
+        Advert advert = Advert.builder()
+                .id(1L)
+                .user(User.builder().id(3L).build())
+                .build();
+        Long chatId = 1L;
+        Chat chat = Chat.builder()
+                .id(chatId)
+                .advert(advert)
+                .buyer(User.builder().id(2L).build())
+                .build();
+        when(chatRepository.findById(chatId)).thenReturn(Optional.of(chat));
+
+        // Act & Assert
+        assertThrows(UnprocessableEntityException.class, () ->  chatService.getChatMessages(page, size, chatId, principal));
     }
 }

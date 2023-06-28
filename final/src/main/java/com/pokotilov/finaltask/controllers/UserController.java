@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +30,8 @@ public class UserController {
 
     @GetMapping
     public Page<UserDto> getAllUsers(
-            @Schema(description = "№ страницы. (1..N)", required = true, type = "integer", defaultValue = "1") @NotNull @Positive Integer pageNo,
-            @Schema(description = "Размер страницы.", required = true, minimum = "1", type = "integer", defaultValue = "10") @NotNull @Positive Integer pageSize) {
+            @Schema(description = "№ страницы. (1..N)", type = "integer", defaultValue = "1") @NotNull @Positive Integer pageNo,
+            @Schema(description = "Размер страницы.", minimum = "1", type = "integer", defaultValue = "10") @NotNull @Positive Integer pageSize) {
         return userService.getAllUsers(pageNo, pageSize);
     }
 

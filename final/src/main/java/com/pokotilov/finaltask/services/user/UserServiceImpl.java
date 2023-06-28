@@ -22,7 +22,6 @@ import java.security.Principal;
 
 @Service
 @RequiredArgsConstructor
-@LogExecution
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -32,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private static final String USER_NOT_FOUND = "User not found";
 
     @Override
+    @LogExecution
     public Page<UserDto> getAllUsers(Integer pageNo, Integer pageSize) {
         Sort sort = Sort.by(Sort.Order.desc("rating"));
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
@@ -39,11 +39,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @LogExecution
     public UserDto getUser(Long userId) {
         return userMapper.toDto(getUserById(userId));
     }
 
     @Override
+    @LogExecution
     public String deleteUser(Long userId, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
@@ -55,6 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @LogExecution
     public UserDto updateUser(Long userId, UpdateUserRequest updateUserRequest, Principal principal) {
         User user = getUserById(userId);
         User requester = getUserByPrincipal(principal);
@@ -72,6 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @LogExecution
     public String banUser(Long id) {
         User user = getUserById(id);
         user.setBan(true);

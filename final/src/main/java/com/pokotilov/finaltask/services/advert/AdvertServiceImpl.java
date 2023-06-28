@@ -27,7 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@LogExecution
+
 public class AdvertServiceImpl implements AdvertService {
 
     private final UserService userService;
@@ -36,7 +36,7 @@ public class AdvertServiceImpl implements AdvertService {
     private final CommentMapper commentMapper;
     private final VoteRepository voteRepository;
 
-
+    @LogExecution
     public Page<OutputAdvertDto> findAdverts(InputFindRequest request) {
         Spec spec = Spec.builder()
                 .title(request.getTitle())
@@ -51,12 +51,14 @@ public class AdvertServiceImpl implements AdvertService {
         return page.map(advertMapper::toDto);
     }
 
+    @LogExecution
     public OutputAdvertDto getAdvert(Long advertId) {
 
         Advert advert = getAdvertById(advertId);
         return advertMapper.toDto(advert);
     }
 
+    @LogExecution
     public OutputAdvertDto createAdvert(InputAdvertDto inputAdvertDto, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Advert advert = Advert.builder()
@@ -70,6 +72,7 @@ public class AdvertServiceImpl implements AdvertService {
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
+    @LogExecution
     public OutputAdvertDto updateAdvert(Long advertId, InputAdvertDto inputAdvertDto, Principal principal) {
         Advert advert = getAdvertById(advertId);
         User user = userService.getUserByPrincipal(principal);
@@ -80,6 +83,7 @@ public class AdvertServiceImpl implements AdvertService {
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
+    @LogExecution
     public String deleteAdvert(Long advertId, Principal principal) {
         Advert advert = getAdvertById(advertId);
         User user = userService.getUserByPrincipal(principal);
@@ -90,12 +94,14 @@ public class AdvertServiceImpl implements AdvertService {
         return "Successful deleted";
     }
 
+    @LogExecution
     public OutputAdvertDto banAdvert(Long id) {
         Advert advert = getAdvertById(id);
         advert.setBan(true);
         return advertMapper.toDto(advertRepository.save(advert));
     }
 
+    @LogExecution
     public String voteAdvert(VoteDto voteDto, Principal principal) {
         Advert advert = getAdvertById(voteDto.getAdvertId());
         User user = advert.getUser();
@@ -117,6 +123,7 @@ public class AdvertServiceImpl implements AdvertService {
         return "Successful vote";
     }
 
+    @LogExecution
     public List<OutputCommentDto> getAdvertComments(Long advertId) {
         Advert advert = getAdvertById(advertId);
         return advert.getComments().stream()

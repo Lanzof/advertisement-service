@@ -28,7 +28,6 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@LogExecution
 public class WalletServiceImpl implements WalletService {
 
     private final UserService userService;
@@ -42,7 +41,7 @@ public class WalletServiceImpl implements WalletService {
 
 
     @Override
-    @Transactional
+    @LogExecution
     public WalletDto createWallet(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         if (user.getWallet() != null) {
@@ -56,6 +55,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @LogExecution
     public WalletDto getWallet(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
@@ -63,6 +63,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @LogExecution
     @Transactional
     public String buyAdvert(Principal principal, Long advertId) {
         User user = userService.getUserByPrincipal(principal);
@@ -87,6 +88,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @LogExecution
     @Transactional
     public OutputAdvertDto buyService(Principal principal, Long serviceId, Long advertId) {
         User user = userService.getUserByPrincipal(principal);
@@ -122,6 +124,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @LogExecution
     @Transactional
     public WalletDto deposit(Double amount, Principal principal) {
         User user = userService.getUserByPrincipal(principal);
@@ -140,7 +143,7 @@ public class WalletServiceImpl implements WalletService {
 
 
     @Override
-    @Transactional
+    @LogExecution
     public List<TransactionDto> showHistory(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
@@ -148,6 +151,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @LogExecution
     public List<PremiumService> showServices() {
         return serviceRepository.findAll();
     }

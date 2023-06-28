@@ -62,10 +62,9 @@ class UserServiceImplTest {
                             .rating(user.getRating())
                             .build();
                 });
-        Pageable pageable = Pageable.ofSize(10);
 
         // Act
-        Page<UserDto> output = userService.getAllUsers(pageable);
+        Page<UserDto> output = userService.getAllUsers(1, 10);
 
         // Assert
         List<UserDto> dtos = output.getContent();
@@ -211,7 +210,6 @@ class UserServiceImplTest {
                 .thenReturn(Optional.of(principalUser));
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(user));
-        when(userRepository.existsByEmail(any())).thenReturn(false);
         doAnswer(invocation -> {
             UpdateUserRequest userDto = invocation.getArgument(0);
             User mapperUser = invocation.getArgument(1);
@@ -261,7 +259,6 @@ class UserServiceImplTest {
                 .thenReturn(Optional.of(principalUser));
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(user));
-        when(userRepository.existsByEmail(any())).thenReturn(false);
         doAnswer(invocation -> {
             UpdateUserRequest userDto = invocation.getArgument(0);
             User mapperUser = invocation.getArgument(1);
@@ -306,12 +303,17 @@ class UserServiceImplTest {
                 .email("test1@example.com")
                 .password("pass")
                 .build();
+        User duplicateUser = User.builder()
+                .id(2L)
+                .email("test1@example.com")
+                .build();
 
         when(userRepository.findByEmail(principal.getName()))
                 .thenReturn(Optional.of(principalUser));
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(user));
-        when(userRepository.existsByEmail(any())).thenReturn(true);
+        when(userRepository.findByEmail(request.getEmail()))
+                .thenReturn(Optional.of(duplicateUser));
 
         // Act & Assert
         assertThrows(BadRequestException.class, () -> userService.updateUser(userId, request, principal), "User with this email already exist");

@@ -2,94 +2,116 @@ package com.pokotilov.finaltask.advice;
 
 import com.pokotilov.finaltask.dto.ExceptionResponse;
 import com.pokotilov.finaltask.exceptions.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestControllerAdvice
 @Slf4j
-public class ControllerAdviceExceptionHandler {
+public class ControllerAdviceExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public final ExceptionResponse handleNotFoundExceptions(NotFoundException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ExceptionResponse> handleNotFoundExceptions(NotFoundException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.error(ex.getMessage(), ex);
+    public ResponseEntity<ExceptionResponse> handleExpectationFailedExceptions(ExpectationFailedException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.EXPECTATION_FAILED, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ExceptionResponse> handleUnprocessableEntityExceptions(UnprocessableEntityException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ExceptionResponse> handleAccessDeniedExceptions(ConflictException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.CONFLICT, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
+
+    @Override
+    @Nullable
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String principal = Optional.ofNullable(request.getUserPrincipal()).isPresent() ? ", user principal: " + request.getUserPrincipal() : "";
+        log.error(request.getContextPath() + " error message: " + ex.getMessage() + " " + principal, ex);
         Map<String, String> violations = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             violations.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
-        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
+        return handleExceptionInternal(ex, body, headers, body.getStatus(), request);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleValidationExceptions(ConstraintViolationException ex) {
-        log.error(ex.getMessage(), ex);
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(ConstraintViolationException ex, HttpServletRequest request) {
+        makeLog(ex, request);
         Map<String, String> violations = new HashMap<>();
         for (ConstraintViolation<?> fieldError : ex.getConstraintViolations()) {
             violations.put(String.valueOf(fieldError.getPropertyPath()), fieldError.getMessage());
         }
-        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public final ExceptionResponse handleUnprocessableEntityExceptions(UnprocessableEntityException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    public ResponseEntity<ExceptionResponse> handleBadRequestExceptions(BadRequestException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
-    public final ExceptionResponse handleChatExceptions(ExpectationFailedException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.EXPECTATION_FAILED, ex.getMessage());
-    }
-
-    @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public final ExceptionResponse handleBadRequestExceptions(RuntimeException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ExceptionResponse> handleAccessDeniedExceptions(AccessDeniedException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNAUTHORIZED, "Access Denied");
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public final ExceptionResponse handleAccessDeniedExceptions(AccessDeniedException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    public ResponseEntity<ExceptionResponse> handleAuthenticationExceptions(AuthenticationException ex, HttpServletRequest request) {
+        makeLog(ex, request);
+        ExceptionResponse body = new ExceptionResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public final ExceptionResponse handleAccessDeniedExceptions(ConflictException ex) {
-        log.error(ex.getMessage(), ex);
-        return new ExceptionResponse(HttpStatus.CONFLICT, ex.getMessage());
+    private static void makeLog(RuntimeException ex, HttpServletRequest request) {
+        String principal = Optional.ofNullable(request.getUserPrincipal()).isPresent() ? ", user principal: " + request.getUserPrincipal() : "";
+        log.error(request.getMethod() + " " + request.getRequestURI() + " error message: " + ex.getMessage() + principal, ex);
     }
 }
