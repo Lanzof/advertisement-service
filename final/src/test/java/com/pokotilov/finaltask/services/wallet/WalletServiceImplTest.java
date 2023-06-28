@@ -17,7 +17,6 @@ import com.pokotilov.finaltask.repositories.WalletRepository;
 import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.user.UserService;
 import com.sun.security.auth.UserPrincipal;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

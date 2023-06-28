@@ -11,7 +11,6 @@ import com.pokotilov.finaltask.repositories.CommentRepository;
 import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.user.UserService;
 import com.sun.security.auth.UserPrincipal;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,12 +59,6 @@ class CommentServiceImplTest {
                 .build();
         when(userService.getUserByPrincipal(principal)).thenReturn(user);
         when(advertService.getAdvertById(advertId)).thenReturn(advert);
-        Comment comment = Comment.builder()
-                .advert(advert)
-                .author(user)
-                .text(text)
-                .ban(false)
-                .build();
         when(commentRepository.save(any(Comment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(commentMapper.toDto(any(Comment.class))).thenAnswer(invocation -> {
