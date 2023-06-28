@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema
+@Schema(description = "Output Advert DTO")
 public class OutputAdvertDto {
     private Long id;
     private String title;

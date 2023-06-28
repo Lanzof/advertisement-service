@@ -1,6 +1,5 @@
 package com.pokotilov.finaltask.controllers;
 
-import com.pokotilov.finaltask.dto.ExceptionResponse;
 import com.pokotilov.finaltask.dto.VoteDto;
 import com.pokotilov.finaltask.dto.advert.InputAdvertDto;
 import com.pokotilov.finaltask.dto.advert.InputFindRequest;
@@ -10,9 +9,6 @@ import com.pokotilov.finaltask.services.advert.AdvertService;
 import com.pokotilov.finaltask.services.wallet.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.*;
@@ -57,11 +53,6 @@ public class AdvertController {
     }
 
     @DeleteMapping("/{advertId}")
-    @Operation(summary = "Удалить объявление", security = @SecurityRequirement(name = "bearerAuth"), responses = {
-            @ApiResponse(description = "Successful Operation", responseCode = "200", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "404", description = "Not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExceptionResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Authentication Failure", content = @Content(schema = @Schema(hidden = true)))
-    })
     public ResponseEntity<String> deleteAdvert(
             @PathVariable("advertId") @Positive Long advertId, Principal principal) {
         return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal));
