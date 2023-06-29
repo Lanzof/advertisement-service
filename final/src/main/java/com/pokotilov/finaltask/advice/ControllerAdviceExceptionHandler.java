@@ -6,8 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -15,7 +18,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +28,7 @@ import java.util.Optional;
 
 @RestControllerAdvice
 @Slf4j
-public class ControllerAdviceExceptionHandler {
+public class ControllerAdviceExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -58,17 +63,19 @@ public class ControllerAdviceExceptionHandler {
     }
 
 
-    @ExceptionHandler
+    @Override
+    @Nullable
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    protected ResponseEntity<ExceptionResponse> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, HttpServletRequest request) {
-        makeLog(ex, request);
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String principal = Optional.ofNullable(request.getUserPrincipal()).isPresent() ? ", user principal: " + request.getUserPrincipal() : "";
+        log.error(request.getContextPath() + " error message: " + ex.getMessage() + " " + principal, ex);
         Map<String, String> violations = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             violations.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
         ExceptionResponse body = new ExceptionResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Data validation error", violations);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return handleExceptionInternal(ex, body, headers, body.getStatus(), request);
     }
 
     @ExceptionHandler
