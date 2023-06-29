@@ -42,7 +42,7 @@ public class InputFindRequest {
     @Schema(description = "Поле для сортировки. Поле для сортировки по умолчанию Rating", nullable = true, allowableValues = {"ID", "TITLE", "DESCRIPTION", "DATE", "PRICE"})
     @Nullable
     private SortField sortField;
-    @Schema(description = "Направление сортировки: asc|desc. По умолчанию desc", nullable = true, allowableValues = {"asc", "desc"})
+    @Schema(description = "Направление сортировки: asc|desc. По умолчанию desc, если отличается от asc то тоже desc", nullable = true, allowableValues = {"asc", "desc"})
     @Nullable
     private String sortDirection;
 }

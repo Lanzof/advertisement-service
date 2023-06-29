@@ -45,12 +45,12 @@ public class UserController {
         return ResponseEntity.ok().body(userService.deleteUser(userId, principal));
     }
 
-    @PostMapping("/{userId}")
+    @PutMapping("/{userId}")
     public ResponseEntity<UserDto> updateUser(@PathVariable("userId") @Positive Long id, @Valid @RequestBody UpdateUserRequest user, Principal principal) {
         return ResponseEntity.ok().body(userService.updateUser(id, user, principal));
     }
 
-    @PostMapping("/{userId}/ban")
+    @PutMapping("/{userId}/ban")
     @Secured({ "ROLE_ADMIN" })
     public ResponseEntity<String> banUser(@PathVariable("userId") @Positive Long id) {
         return ResponseEntity.ok().body(userService.banUser(id));

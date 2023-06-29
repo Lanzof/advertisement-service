@@ -53,6 +53,7 @@ public class AdvertController {
     }
 
     @DeleteMapping("/{advertId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<String> deleteAdvert(
             @PathVariable("advertId") @Positive Long advertId, Principal principal) {
         return ResponseEntity.ok(advertService.deleteAdvert(advertId, principal));

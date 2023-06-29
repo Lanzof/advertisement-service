@@ -21,7 +21,7 @@ public class UpdateUserRequest {
     @Email(regexp = "^[\\w!#$%&amp;'*+/=?`{|}~^\\-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^\\-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$",
             message = "wrong email")
     private String email;
-    @Schema(example = "YourPassword23[]")
+    @Schema(example = "YourPassword23[]", description = "Пароль должен быть минимум 8 символов и содержать как минимум 1 заглавную и строчную латинскую букву и специальный символ")
     @NotBlank(message = "password is blank")
     @Size(min = 8, max = 255, message = "password should have 8 symbols at least")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~]).{8,}$",
