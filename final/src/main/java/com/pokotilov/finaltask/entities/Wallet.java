@@ -24,5 +24,5 @@ public class Wallet {
     private Double balance;
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("date DESC")
-    private List<Transaction> transactionsHistory = new ArrayList<>();
+    private List<TransactionRecord> transactionsHistory = new ArrayList<>();
 }

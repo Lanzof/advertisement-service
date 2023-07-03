@@ -67,23 +67,24 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public String buyAdvert(Principal principal, Long advertId) {
         User user = userService.getUserByPrincipal(principal);
-        Wallet wallet = getWalletFromUser(user);
+        Wallet buyerWallet = getWalletFromUser(user);
         Advert advert = advertService.getAdvertById(advertId);
         if (user.getId().equals(advert.getUser().getId())) {
             throw new ExpectationFailedException("You cannot buy your own ad");
         }
-        if (wallet.getBalance() - advert.getPrice() < 0) {
+        if (Boolean.TRUE.equals(advert.getBan())) {
+            throw new ConflictException("This advert is banned");
+        }
+        Wallet advertOwnerWallet = Optional.ofNullable(advert.getUser().getWallet())
+                .orElseThrow(() -> new ConflictException("The seller does not have a wallet"));
+        if (buyerWallet.getBalance() - advert.getPrice() < 0) {
             throw new BadRequestException("Not enough money in the account wallet");
         }
-        wallet.setBalance(wallet.getBalance() - advert.getPrice());
+        buyerWallet.setBalance(buyerWallet.getBalance() - advert.getPrice());
+        advertOwnerWallet.setBalance(advertOwnerWallet.getBalance() + advert.getPrice());
         String description = String.format("Advert id: %d, title: %s has been bought.", advertId, advert.getTitle());
-        Transaction transaction = Transaction.builder()
-                .operation(Operation.DECREASE)
-                .sum(advert.getPrice())
-                .wallet(wallet)
-                .description(description)
-                .build();
-        transactionRepository.save(transaction);
+        historyRecord(Operation.DECREASE, advert.getPrice(), buyerWallet, description);
+        historyRecord(Operation.INCREASE, advert.getPrice(), advertOwnerWallet, description);
         return "Successful transaction";
     }
 
@@ -113,13 +114,7 @@ public class WalletServiceImpl implements WalletService {
         advert.setPremiumEnd(LocalDate.now().plusDays(service.getDuration()));
         advert.setPremium(null);
         String description = String.format("Service id: %d, description: %s, has been bought for advert %d.", serviceId, service.getDescription(), advert.getId());
-        Transaction transaction = Transaction.builder()
-                .operation(Operation.DECREASE)
-                .sum(service.getPrice())
-                .wallet(wallet)
-                .description(description)
-                .build();
-        transactionRepository.save(transaction);
+        historyRecord(Operation.DECREASE, service.getPrice(), wallet, description);
         return advertMapper.toDto(advert);
     }
 
@@ -130,17 +125,10 @@ public class WalletServiceImpl implements WalletService {
         User user = userService.getUserByPrincipal(principal);
         Wallet wallet = getWalletFromUser(user);
         wallet.setBalance(wallet.getBalance() + amount);
-        String description = String.format("User id: %d add %f to wallet, total: %f ", user.getId(), amount, wallet.getBalance());
-        Transaction transaction = Transaction.builder()
-                .operation(Operation.INCREASE)
-                .sum(amount)
-                .wallet(wallet)
-                .description(description)
-                .build();
-        transactionRepository.save(transaction);
+        String description = String.format("User id: %d add %.2f to wallet, total: %.2f ", user.getId(), amount, wallet.getBalance());
+        historyRecord(Operation.INCREASE, amount, wallet, description);
         return walletMapper.toDto(walletRepository.save(wallet));
     }
-
 
     @Override
     @LogExecution
@@ -160,4 +148,15 @@ public class WalletServiceImpl implements WalletService {
         return Optional.ofNullable(user.getWallet())
                 .orElseThrow(() -> new NotFoundException("Wallet does not exist"));
     }
+
+    private void historyRecord(Operation operation, Double amount, Wallet wallet, String description) {
+        TransactionRecord transactionRecord = TransactionRecord.builder()
+                .operation(operation)
+                .sum(amount)
+                .wallet(wallet)
+                .description(description)
+                .build();
+        transactionRepository.save(transactionRecord);
+    }
+
 }

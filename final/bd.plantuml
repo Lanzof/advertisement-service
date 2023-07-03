@@ -1,0 +1,88 @@
+@startuml
+hide circle
+!theme plain
+
+class adverts {
+   title: varchar(255)
+   description: varchar(255)
+   date: date
+   price: double precision
+   user_id: bigint
+   ban: boolean
+   premium_end: date
+   premium_start: date
+   id: bigint
+}
+class chats {
+   advert_id: integer
+   buyer_id: integer
+   id: bigint
+}
+class comments {
+   advert_id: integer
+   user_id: integer
+   date: timestamp(0)
+   text: text
+   ban: boolean
+   id: bigint
+}
+class messages {
+   chat_id: integer
+   text: text
+   date: timestamp(0)
+   sender_id: integer
+   id: bigint
+}
+class services {
+   description: varchar(255)
+   duration: integer
+   price: double precision
+   id: bigint
+}
+class transactions_history {
+   date: timestamp(0)
+   description: varchar(255)
+   operation: varchar(255)
+   sum: double precision
+   wallet_id: bigint
+   id: bigint
+}
+class users {
+   ban: boolean
+   description: varchar(255)
+   email: varchar(255)
+   first_name: varchar(255)
+   last_name: varchar(255)
+   password: varchar(255)
+   phone: varchar(255)
+   rating: real
+   role: varchar(255)
+   id: bigint
+}
+class votes {
+   date: timestamp(0)
+   vote: integer
+   author_id: integer
+   advert_id: bigint
+}
+class wallets {
+   balance: double precision
+   user_id: bigint
+   id: bigint
+}
+
+users "1" *-- "0..1" wallets
+users "1" *-- "0..1" adverts
+wallets "1" *-- "0..*" transactions_history 
+
+chats "1" *-- "0..*" messages
+adverts "1" *-- "0..*" chats
+users "1" *-- "0..*" chats
+users "1" *-- "0..*" messages
+
+adverts "1" *-- "0..*" comments
+users "1" *-- "0..*" comments
+
+adverts "1" *-- "0..*" votes
+users "1" *-- "0..*" votes
+@enduml

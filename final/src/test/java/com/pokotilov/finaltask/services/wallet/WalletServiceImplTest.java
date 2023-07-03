@@ -159,33 +159,29 @@ class WalletServiceImplTest {
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
         Long advertId = 2L;
+        User seller = User.builder()
+                .id(2L)
+                .wallet(Wallet.builder().id(1L).balance(0d).build())
+                .build();
         Advert advert = Advert.builder()
                 .id(advertId)
                 .title("Title")
-                .user(User.builder().id(2L).build())
+                .user(seller)
                 .price(1000.00)
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
-        ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
-        Transaction expectedTransaction = Transaction.builder()
-                .description(String.format("Advert id: %d, title: %s has been bought.", advertId, advert.getTitle()))
-                .operation(Operation.DECREASE)
-                .sum(advert.getPrice())
-                .wallet(principalUser.getWallet())
-                .build();
 
         // Act
         String output = walletService.buyAdvert(principal, advertId);
 
         // Assert
-        verify(transactionRepository).save(savedTransaction.capture());
+        verify(transactionRepository, times(2)).save(any(TransactionRecord.class));
         assertEquals("Successful transaction", output);
-        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
     }
 
     @Test
-    void buyAdvert_notEnoughWalletBalance_shouldThrow() {
+    void buyAdvert_advertOwnerHasNoWallet_shouldThrowConflictException() {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
         User principalUser = User.builder()
@@ -200,7 +196,64 @@ class WalletServiceImplTest {
                 .id(advertId)
                 .title("Title")
                 .user(User.builder().id(2L).build())
-                .price(2000.00)
+                .price(1000.00)
+                .build();
+        when(advertService.getAdvertById(advertId))
+                .thenReturn(advert);
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> walletService.buyAdvert(principal, advertId), "The seller does not have a wallet");
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void buyAdvert_advertIsBanned_shouldThrowConflictException() {
+        // Arrange
+        Principal principal = new UserPrincipal("test@example.com");
+        User principalUser = User.builder()
+                .id(1L)
+                .role(Role.USER)
+                .wallet(Wallet.builder().balance(1500.00).build())
+                .build();
+        when(userService.getUserByPrincipal(principal))
+                .thenReturn(principalUser);
+        Long advertId = 2L;
+        Advert advert = Advert.builder()
+                .id(advertId)
+                .title("Title")
+                .user(User.builder().id(2L).build())
+                .price(1000.00)
+                .ban(true)
+                .build();
+        when(advertService.getAdvertById(advertId))
+                .thenReturn(advert);
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> walletService.buyAdvert(principal, advertId), "This advert is banned");
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void buyAdvert_notEnoughWalletBalance_shouldThrow() {
+        // Arrange
+        Principal principal = new UserPrincipal("test@example.com");
+        User principalUser = User.builder()
+                .id(1L)
+                .role(Role.USER)
+                .wallet(Wallet.builder().balance(500.00).build())
+                .build();
+        when(userService.getUserByPrincipal(principal))
+                .thenReturn(principalUser);
+        Long advertId = 2L;
+        User seller = User.builder()
+                .id(2L)
+                .wallet(Wallet.builder().id(1L).balance(0d).build())
+                .build();
+        Advert advert = Advert.builder()
+                .id(advertId)
+                .title("Title")
+                .user(seller)
+                .price(1000.00)
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
@@ -263,8 +316,8 @@ class WalletServiceImplTest {
                 .duration(30)
                 .build();
         when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
-        ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
-        Transaction expectedTransaction = Transaction.builder()
+        ArgumentCaptor<TransactionRecord> savedTransaction = ArgumentCaptor.forClass(TransactionRecord.class);
+        TransactionRecord expectedTransactionRecord = TransactionRecord.builder()
                 .description(String.format("Service id: %d, description: %s, has been bought for advert %d.", serviceId, service.getDescription(), advert.getId()))
                 .operation(Operation.DECREASE)
                 .sum(service.getPrice())
@@ -283,7 +336,7 @@ class WalletServiceImplTest {
         // Assert
         verify(transactionRepository).save(savedTransaction.capture());
         assertTrue(output.getPremium());
-        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
+        assertEquals(expectedTransactionRecord.getDescription(), savedTransaction.getValue().getDescription());
         assertEquals(LocalDate.now(), advert.getPremiumStart());
         assertEquals(LocalDate.now().plusDays(service.getDuration()), advert.getPremiumEnd());
         assertEquals(1000.00, principalUser.getWallet().getBalance());
@@ -448,9 +501,9 @@ class WalletServiceImplTest {
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
         when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        ArgumentCaptor<Transaction> savedTransaction = ArgumentCaptor.forClass(Transaction.class);
-        Transaction expectedTransaction = Transaction.builder()
-                .description(String.format("User id: %d add %f to wallet, total: %f ", principalUser.getId(), amount, 2000.00))
+        ArgumentCaptor<TransactionRecord> savedTransaction = ArgumentCaptor.forClass(TransactionRecord.class);
+        TransactionRecord expectedTransactionRecord = TransactionRecord.builder()
+                .description(String.format("User id: %d add %.2f to wallet, total: %.2f ", principalUser.getId(), amount, 2000.00))
                 .operation(Operation.INCREASE)
                 .sum(amount)
                 .wallet(principalUser.getWallet())
@@ -468,7 +521,7 @@ class WalletServiceImplTest {
 
         // Assert
         verify(transactionRepository).save(savedTransaction.capture());
-        assertEquals(expectedTransaction.getDescription(), savedTransaction.getValue().getDescription());
+        assertEquals(expectedTransactionRecord.getDescription(), savedTransaction.getValue().getDescription());
         assertEquals(2000.00, output.getBalance());
     }
 
@@ -477,10 +530,10 @@ class WalletServiceImplTest {
         // Arrange
         Principal principal = new UserPrincipal("test@example.com");
 
-        List<Transaction> list = List.of(
-                Transaction.builder().id(1L).description("text1").build(),
-                Transaction.builder().id(2L).description("text2").build(),
-                Transaction.builder().id(3L).description("text3").build()
+        List<TransactionRecord> list = List.of(
+                TransactionRecord.builder().id(1L).description("text1").build(),
+                TransactionRecord.builder().id(2L).description("text2").build(),
+                TransactionRecord.builder().id(3L).description("text3").build()
         );
         Wallet wallet = Wallet.builder()
                 .balance(1500.00)
@@ -493,8 +546,8 @@ class WalletServiceImplTest {
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
-        when(transactionMapper.toDto(any(Transaction.class))).thenAnswer(invocation -> {
-            Transaction tr = invocation.getArgument(0);
+        when(transactionMapper.toDto(any(TransactionRecord.class))).thenAnswer(invocation -> {
+            TransactionRecord tr = invocation.getArgument(0);
             return TransactionDto.builder()
                     .description(tr.getDescription())
                     .build();
