@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class WalletServiceImpl implements WalletService {
     @LogExecution
     public WalletDto createWallet(Principal principal) {
         User user = userService.getUserByPrincipal(principal);
-        if (user.getWallet() != null) {
+        if (walletRepository.existsById(user.getId())) {
             throw new ConflictException("Wallet already exist");
         }
         Wallet wallet = new Wallet();
@@ -69,13 +68,13 @@ public class WalletServiceImpl implements WalletService {
         User user = userService.getUserByPrincipal(principal);
         Wallet buyerWallet = getWalletFromUser(user);
         Advert advert = advertService.getAdvertById(advertId);
-        if (user.getId().equals(advert.getUser().getId())) {
-            throw new ExpectationFailedException("You cannot buy your own ad");
-        }
         if (Boolean.TRUE.equals(advert.getBan())) {
             throw new ConflictException("This advert is banned");
         }
-        Wallet advertOwnerWallet = Optional.ofNullable(advert.getUser().getWallet())
+        if (user.getId().equals(advert.getUser().getId())) {
+            throw new ExpectationFailedException("You cannot buy your own ad");
+        }
+        Wallet advertOwnerWallet = walletRepository.findById(advert.getUser().getId())
                 .orElseThrow(() -> new ConflictException("The seller does not have a wallet"));
         if (buyerWallet.getBalance() - advert.getPrice() < 0) {
             throw new BadRequestException("Not enough money in the account wallet");
@@ -98,11 +97,11 @@ public class WalletServiceImpl implements WalletService {
         if (!user.getId().equals(advert.getUser().getId())) {
             throw new ExpectationFailedException("Advert does not belong to this user");
         }
-        if (Boolean.TRUE.equals(advert.getPremium())) {
-            throw new ConflictException("This advert already has a premium");
-        }
         if (Boolean.TRUE.equals(advert.getBan())) {
             throw new ConflictException("This advert is banned");
+        }
+        if (Boolean.TRUE.equals(advert.getPremium())) {
+            throw new ConflictException("This advert already has a premium");
         }
         PremiumService service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new NotFoundException("Service not found"));
@@ -144,8 +143,8 @@ public class WalletServiceImpl implements WalletService {
         return serviceRepository.findAll();
     }
 
-    private static Wallet getWalletFromUser(User user) {
-        return Optional.ofNullable(user.getWallet())
+    private Wallet getWalletFromUser(User user) {
+        return walletRepository.findById(user.getId())
                 .orElseThrow(() -> new NotFoundException("Wallet does not exist"));
     }
 

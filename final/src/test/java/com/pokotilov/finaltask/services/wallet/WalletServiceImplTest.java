@@ -64,6 +64,8 @@ class WalletServiceImplTest {
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.existsById(principalUser.getId()))
+                .thenReturn(false);
         when(walletRepository.save(any(Wallet.class)))
                 .thenAnswer(invocation -> {
                     Wallet wallet = invocation.getArgument(0);
@@ -94,10 +96,11 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(new Wallet())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.existsById(principalUser.getId()))
+                .thenReturn(true);
 
         // Act & Assert
         assertThrows(ConflictException.class, () -> walletService.createWallet(principal), "Wallet already exist");
@@ -112,10 +115,12 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
         when(walletMapper.toDto(any(Wallet.class)))
                 .thenAnswer(invocation -> {
                     Wallet wallet = invocation.getArgument(0);
@@ -138,10 +143,11 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(null)
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NotFoundException.class, () -> walletService.getWallet(principal), "Wallet does not exist");
@@ -154,14 +160,16 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         User seller = User.builder()
                 .id(2L)
-                .wallet(Wallet.builder().id(1L).balance(0d).build())
                 .build();
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -169,8 +177,11 @@ class WalletServiceImplTest {
                 .user(seller)
                 .price(1000.00)
                 .build();
+        Wallet sellerWallet = Wallet.builder().user(seller).balance(0d).build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+        when(walletRepository.findById(advert.getUser().getId()))
+                .thenReturn(Optional.of(sellerWallet));
 
         // Act
         String output = walletService.buyAdvert(principal, advertId);
@@ -187,10 +198,14 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -200,6 +215,8 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+        when(walletRepository.findById(advert.getUser().getId()))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ConflictException.class, () -> walletService.buyAdvert(principal, advertId), "The seller does not have a wallet");
@@ -213,10 +230,13 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -240,14 +260,16 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         User seller = User.builder()
                 .id(2L)
-                .wallet(Wallet.builder().id(1L).balance(0d).build())
                 .build();
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -255,8 +277,11 @@ class WalletServiceImplTest {
                 .user(seller)
                 .price(1000.00)
                 .build();
+        Wallet sellerWallet = Wallet.builder().user(seller).balance(0d).build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+        when(walletRepository.findById(advert.getUser().getId()))
+                .thenReturn(Optional.of(sellerWallet));
 
         // Act & Assert
         assertThrows(BadRequestException.class, () -> walletService.buyAdvert(principal, advertId), "Not enough money in the account wallet");
@@ -270,10 +295,13 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -296,10 +324,13 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -309,6 +340,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
         PremiumService service = PremiumService.builder()
                 .id(serviceId)
@@ -316,12 +348,13 @@ class WalletServiceImplTest {
                 .duration(30)
                 .build();
         when(serviceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+
         ArgumentCaptor<TransactionRecord> savedTransaction = ArgumentCaptor.forClass(TransactionRecord.class);
         TransactionRecord expectedTransactionRecord = TransactionRecord.builder()
                 .description(String.format("Service id: %d, description: %s, has been bought for advert %d.", serviceId, service.getDescription(), advert.getId()))
                 .operation(Operation.DECREASE)
                 .sum(service.getPrice())
-                .wallet(principalUser.getWallet())
+                .wallet(principalWallet)
                 .build();
         when(advertMapper.toDto(any(Advert.class))).thenAnswer(invocation -> {
             Advert ad = invocation.getArgument(0);
@@ -339,7 +372,7 @@ class WalletServiceImplTest {
         assertEquals(expectedTransactionRecord.getDescription(), savedTransaction.getValue().getDescription());
         assertEquals(LocalDate.now(), advert.getPremiumStart());
         assertEquals(LocalDate.now().plusDays(service.getDuration()), advert.getPremiumEnd());
-        assertEquals(1000.00, principalUser.getWallet().getBalance());
+        assertEquals(1000.00, principalWallet.getBalance());
     }
 
     @Test
@@ -349,10 +382,13 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(200.00).build())
                 .build();
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(200.00).build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -362,6 +398,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
         PremiumService service = PremiumService.builder()
                 .id(serviceId)
@@ -382,10 +419,14 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -395,6 +436,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
         when(serviceRepository.findById(serviceId)).thenReturn(Optional.empty());
 
@@ -410,10 +452,14 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -424,6 +470,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
 
         // Act & Assert
@@ -438,10 +485,14 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -453,6 +504,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
 
         // Act & Assert
@@ -467,10 +519,14 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         Long advertId = 2L;
         Advert advert = Advert.builder()
                 .id(advertId)
@@ -481,6 +537,7 @@ class WalletServiceImplTest {
                 .build();
         when(advertService.getAdvertById(advertId))
                 .thenReturn(advert);
+
         Long serviceId = 1L;
 
         // Act & Assert
@@ -496,17 +553,21 @@ class WalletServiceImplTest {
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(Wallet.builder().balance(1500.00).build())
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet principalWallet = Wallet.builder().user(principalUser).balance(1500.00).build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(principalWallet));
+
         when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<TransactionRecord> savedTransaction = ArgumentCaptor.forClass(TransactionRecord.class);
         TransactionRecord expectedTransactionRecord = TransactionRecord.builder()
                 .description(String.format("User id: %d add %.2f to wallet, total: %.2f ", principalUser.getId(), amount, 2000.00))
                 .operation(Operation.INCREASE)
                 .sum(amount)
-                .wallet(principalUser.getWallet())
+                .wallet(principalWallet)
                 .build();
         when(walletMapper.toDto(any(Wallet.class)))
                 .thenAnswer(invocation -> {
@@ -535,17 +596,21 @@ class WalletServiceImplTest {
                 TransactionRecord.builder().id(2L).description("text2").build(),
                 TransactionRecord.builder().id(3L).description("text3").build()
         );
-        Wallet wallet = Wallet.builder()
-                .balance(1500.00)
-                .transactionsHistory(list)
-                .build();
         User principalUser = User.builder()
                 .id(1L)
                 .role(Role.USER)
-                .wallet(wallet)
                 .build();
         when(userService.getUserByPrincipal(principal))
                 .thenReturn(principalUser);
+
+        Wallet wallet = Wallet.builder()
+                .user(principalUser)
+                .balance(1500.00)
+                .transactionsHistory(list)
+                .build();
+        when(walletRepository.findById(principalUser.getId()))
+                .thenReturn(Optional.of(wallet));
+
         when(transactionMapper.toDto(any(TransactionRecord.class))).thenAnswer(invocation -> {
             TransactionRecord tr = invocation.getArgument(0);
             return TransactionDto.builder()

@@ -15,10 +15,11 @@ import java.util.List;
 @Table(name = "wallets")
 public class Wallet {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", unique = true, nullable = false, updatable = false)
+    @MapsId
     private User user;
     @Column(columnDefinition = "double precision default 0")
     private Double balance;
