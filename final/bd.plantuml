@@ -68,7 +68,6 @@ class votes {
 class wallets {
    balance: double precision
    user_id: bigint
-   id: bigint
 }
 
 users "1" *-- "0..1" wallets
