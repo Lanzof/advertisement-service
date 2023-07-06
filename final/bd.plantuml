@@ -71,7 +71,7 @@ class wallets {
 }
 
 users "1" *-- "0..1" wallets
-users "1" *-- "0..1" adverts
+users "1" *-- "0..*" adverts
 wallets "1" *-- "0..*" transactions_history 
 
 chats "1" *-- "0..*" messages
