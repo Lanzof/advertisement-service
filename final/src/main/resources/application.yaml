@@ -1,4 +1,6 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:29092
   liquibase:
     enabled: true
     change-log: classpath:db/master.yaml
@@ -16,6 +18,19 @@ spring:
     url: jdbc:postgresql://localhost/Final-task
     username: postgres
     password: pass
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: a92387400@gmail.com
+    password: zzldzhlaxdfbxbzv #Alesha`123
+    templates:
+      path: mail-templates
+    properties:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
 
 jwt:
   header: Authorization

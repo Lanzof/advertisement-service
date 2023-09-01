@@ -10,6 +10,8 @@ import com.pokotilov.finaltask.exceptions.ConflictException;
 import com.pokotilov.finaltask.exceptions.NotFoundException;
 import com.pokotilov.finaltask.repositories.UserRepository;
 import com.pokotilov.finaltask.security.JwtService;
+import com.pokotilov.finaltask.services.email.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,9 +20,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+    private final EmailService emailService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
