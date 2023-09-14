@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Component
@@ -24,7 +25,7 @@ public class GreetingsListener {
         params.put("senderName", "my company");
 
         try {
-            emailService.sendMessageUsingThymeLeafTemplate(array[0], "Greetings", params);
+            emailService.sendMessageUsingThymeLeafTemplate(array[0], "Greetings", params, Locale.forLanguageTag(array[2]));
         } catch (MessagingException e) {
             e.printStackTrace();
         }

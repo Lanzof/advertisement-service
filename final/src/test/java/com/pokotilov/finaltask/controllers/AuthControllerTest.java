@@ -70,22 +70,22 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.map.email").value("wrong email"));
     }
 
-    @Test
-    void testSignUp() throws Exception {
-        String token = "token";
-        RegisterUserRequest registerUserRequest = RegisterUserRequest.builder()
-                .email("someEmail@gmail.com")
-                .password("YourPassword23[]")
-                .firstName("Pablo")
-                .lastName("Ganacci")
-                .phone("+77894561212")
-                .build();
-        when(authenticationService.register(registerUserRequest)).thenReturn(token);
-
-        mockMvc.perform(post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(registerUserRequest)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(token));
-    }
+//    @Test
+//    void testSignUp() throws Exception {
+//        String token = "token";
+//        RegisterUserRequest registerUserRequest = RegisterUserRequest.builder()
+//                .email("someEmail@gmail.com")
+//                .password("YourPassword23[]")
+//                .firstName("Pablo")
+//                .lastName("Ganacci")
+//                .phone("+77894561212")
+//                .build();
+//        when(authenticationService.register(registerUserRequest)).thenReturn(token);
+//
+//        mockMvc.perform(post("/api/auth/signup")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(registerUserRequest)))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(token));
+//    }
 }

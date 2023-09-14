@@ -31,7 +31,9 @@ spring:
         auth: true
         starttls:
           enable: true
-
+  messages:
+    basename: mailMessages
+    encoding: UTF-8
 jwt:
   header: Authorization
   secret: 2F413F442A472D4B6150645367566B59703373367639792442264529482B4D62

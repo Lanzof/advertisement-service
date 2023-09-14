@@ -6,12 +6,12 @@ import com.pokotilov.finaltask.services.auth.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,9 +28,9 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@Valid @RequestBody RegisterUserRequest request) {
+    public ResponseEntity<String> signUp(@Valid @RequestBody RegisterUserRequest request, @RequestHeader(value = HttpHeaders.ACCEPT_LANGUAGE, required = false) Locale locale) {
         ResponseEntity<String> responseEntity = ResponseEntity.ok().body(authenticationService.register(request));
-        kafkaTemplate.send("greetings", request.getEmail() + ";" + request.getLastName() + " " + request.getFirstName());
+        kafkaTemplate.send("greetings", request.getEmail() + ";" + request.getLastName() + " " + request.getFirstName() + ";" + locale.toLanguageTag());
         return responseEntity;
     }
 }
