@@ -43,3 +43,6 @@ logging:
     name: log/myapp.log
 auth:
   adminCode: Admin
+dadata:
+  client:
+    token: b0ce84eeefb5ff60002b9e0f881ac67c7a9435ca
